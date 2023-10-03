@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "pnpm run generate && unbuild && pnpm run generate:clean",
     "dev": "vitest dev",
     "play": "jiti playground",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
@@ -28,7 +28,9 @@
     "prepack": "pnpm run build",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage",
-    "test:types": "tsc --noEmit --skipLibCheck"
+    "test:types": "tsc --noEmit --skipLibCheck",
+    "generate": "tsc --project src/generate/tsconfig.json && node src/generate/generate.js",
+    "generate:clean": "rm -rf src/generated/"
   },
   "devDependencies": {
     "@types/node": "^20.5.4",

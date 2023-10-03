@@ -1,15 +1,17 @@
 import { writeFile } from 'node:fs'
 import { CssInJs } from 'postcss-js'
-import styled from './daisy-untailwind/styled'
-import unstyled from './daisy-untailwind/unstyled'
-import utilities from './daisy-untailwind/utilities'
-import utilitiesStyled from './daisy-untailwind/utilities-styled'
-import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
-
-import base from './daisy-untailwind/base'
-import styledRtl from './daisy-untailwind/styled.rtl'
-import unstyledRtl from './daisy-untailwind/unstyled.rtl'
-import { generateShortcutsRulesAndPreflights, replacePrefix } from './helpers'
+import base from './daisy-untailwind/base.js'
+import styled from './daisy-untailwind/styled.js'
+import styledRtl from './daisy-untailwind/styled.rtl.js'
+import unstyled from './daisy-untailwind/unstyled.js'
+import unstyledRtl from './daisy-untailwind/unstyled.rtl.js'
+import utilities from './daisy-untailwind/utilities.js'
+import utilitiesStyled from './daisy-untailwind/utilities-styled.js'
+import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled.js'
+import {
+  generateShortcutsRulesAndPreflights,
+  replacePrefix,
+} from './helpers.js'
 
 const styleFiles = [
   { css: styled as CssInJs, filename: 'styled.json' },
@@ -39,8 +41,11 @@ for (const styleFile of styleFiles) {
   )
 
   writeFile(
-    `../generated/${styleFile.filename}`,
+    `./src/generated/${styleFile.filename}`,
     replacePrefix(jsonContent),
+    {
+      flag: 'w',
+    },
     (err) => {
       if (err) {
         console.error(err)
