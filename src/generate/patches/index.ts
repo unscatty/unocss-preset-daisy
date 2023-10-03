@@ -1,3 +1,3 @@
-export * from './collapse-content.js'
-export * from './menu-item.js'
-export * from './outlined.js'
+export * from './collapse-content'
+export * from './menu-item'
+export * from './outlined'

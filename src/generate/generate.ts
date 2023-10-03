@@ -1,18 +1,18 @@
 import { writeFile } from 'node:fs'
-import base from './daisy-untailwind/base.js'
-import styled from './daisy-untailwind/styled.js'
-import styledRtl from './daisy-untailwind/styled.rtl.js'
-import unstyled from './daisy-untailwind/unstyled.js'
-import unstyledRtl from './daisy-untailwind/unstyled.rtl.js'
-import utilitiesStyled from './daisy-untailwind/utilities-styled.js'
-import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled.js'
-import utilities from './daisy-untailwind/utilities.js'
+import base from './daisy-untailwind/base'
+import styled from './daisy-untailwind/styled'
+import styledRtl from './daisy-untailwind/styled.rtl'
+import unstyled from './daisy-untailwind/unstyled'
+import unstyledRtl from './daisy-untailwind/unstyled.rtl'
+import utilitiesStyled from './daisy-untailwind/utilities-styled'
+import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
+import utilities from './daisy-untailwind/utilities'
 import {
   generateShortcutsRulesAndPreflights,
   replacePrefix,
-} from './helpers.js'
-import { applyPatches, patches } from './patch.js'
-import { patchableShortcutsMapToStaticShortcuts } from './utils.js'
+} from './helpers'
+import { applyPatches, patches } from './patch'
+import { patchableShortcutsMapToStaticShortcuts } from './utils'
 
 const styleFiles = [
   { name: 'styled', css: styled, filename: 'styled.json' },

@@ -1,6 +1,6 @@
 {
   "name": "@unscatty/unocss-preset-daisy",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "UnoCSS preset for daisyUI",
   "repository": "unscatty/unocss-preset-daisy",
   "author": "Carlos Aguilera",
@@ -21,7 +21,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run generate:compile && pnpm run generate && unbuild && pnpm run generate:clean",
+    "build": "pnpm run generate:compile && pnpm run generate && unbuild --minify && pnpm run clean",
+    "build:dev": "pnpm run build && pnpm run dev",
     "dev": "vite playground",
     "play": "jiti playground",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
@@ -30,10 +31,11 @@
     "release": "changelogen --release && npm publish --access public && git push --follow-tags",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
-    "generate": "mkdirp src/generated && node src/generate/generate.js",
-    "generate:compile": "tsc --project src/generate/tsconfig.json",
-    "generate:compile:clean": "rm src/generate/*.js && rm src/generate/patches/*.js",
-    "generate:clean": "rm -rf src/generated/"
+    "generate": "mkdirp src/generated && node src/generate/dist/generate.mjs",
+    "generate:compile": "unbuild src/generate",
+    "generate:compile:clean": "rimraf src/generate/dist/",
+    "generate:clean": "rimraf src/generated/",
+    "clean": "pnpm run generate:clean && pnpm run generate:compile:clean"
   },
   "devDependencies": {
     "@iconify-json/octicon": "^1.1.49",
@@ -61,7 +63,8 @@
     "parsel-js": "^1.1.2",
     "postcss": "^8.4.31",
     "postcss-js": "^4.0.1",
-    "postcss-values-parser": "^6.0.2"
+    "postcss-values-parser": "^6.0.2",
+    "rimraf": "^5.0.5"
   },
   "peerDependencies": {
     "daisyui": "^3.8.3",

@@ -11,7 +11,7 @@ import {
 } from 'unocss'
 import camelCase from 'camelcase'
 import colors from 'daisyui/src/theming/index'
-import themes from 'daisyui/src/theming/themes.js'
+import themes from 'daisyui/src/theming/themes'
 import colorFunctions from 'daisyui/src/theming/functions'
 import { mergeMaps } from './generate/helpers'
 

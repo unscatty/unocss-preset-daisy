@@ -1,6 +1,6 @@
-import { patchCollapseContent, patchMenuItem, patchOutlined } from './patches/index.js'
+import { patchCollapseContent, patchMenuItem, patchOutlined } from './patches/index'
 import { GeneratedAssets, Patch, PatchableAssets } from './types'
-import { generatedShortcutsMapToPatchableShortcutsMap } from './utils.js'
+import { generatedShortcutsMapToPatchableShortcutsMap } from './utils'
 
 export const patches = [patchCollapseContent, patchMenuItem, patchOutlined]
 
