@@ -1,8 +1,9 @@
 {
-  "name": "unocss-preset-daisy",
+  "name": "@unscatty/unocss-preset-daisy",
   "version": "0.0.1",
   "description": "UnoCSS preset for daisyUI",
   "repository": "unscatty/unocss-preset-daisy",
+  "author": "Carlos Aguilera",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -20,8 +21,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run generate && unbuild && pnpm run generate:clean",
-    "dev": "vitest dev",
+    "build": "pnpm run generate:compile && pnpm run generate && unbuild && pnpm run generate:clean",
+    "dev": "vite playground",
     "play": "jiti playground",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
@@ -29,7 +30,8 @@
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
-    "generate": "tsc --project src/generate/tsconfig.json && node src/generate/generate.js",
+    "generate": "mkdirp src/generated && node src/generate/generate.js",
+    "generate:compile": "tsc --project src/generate/tsconfig.json",
     "generate:clean": "rm -rf src/generated/"
   },
   "devDependencies": {
