@@ -11,6 +11,9 @@ dependencies:
   camelcase:
     specifier: ^8.0.0
     version: 8.0.0
+  mkdirp:
+    specifier: ^3.0.1
+    version: 3.0.1
   parsel-js:
     specifier: ^1.1.2
     version: 1.1.2
@@ -25,12 +28,18 @@ dependencies:
     version: 6.0.2(postcss@8.4.31)
 
 devDependencies:
+  '@iconify-json/octicon':
+    specifier: ^1.1.49
+    version: 1.1.49
   '@types/node':
     specifier: ^20.5.4
     version: 20.8.2
   '@types/postcss-js':
     specifier: ^4.0.2
     version: 4.0.2
+  '@unocss/reset':
+    specifier: ^0.56.4
+    version: 0.56.4
   '@vitest/coverage-v8':
     specifier: ^0.34.2
     version: 0.34.6(vitest@0.34.6)
@@ -61,6 +70,9 @@ devDependencies:
   unocss:
     specifier: ^0.56.4
     version: 0.56.4(postcss@8.4.31)(rollup@3.29.4)(vite@4.4.9)
+  vite:
+    specifier: ^4.4.9
+    version: 4.4.9(@types/node@20.8.2)
   vitest:
     specifier: ^0.34.2
     version: 0.34.6
@@ -748,6 +760,12 @@ packages:
 
   /@humanwhocodes/object-schema@1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
+    dev: true
+
+  /@iconify-json/octicon@1.1.49:
+    resolution: {integrity: sha512-wv/uSwSkxk4O0VituCjiFkHVhKVHM7MdE4vvRmyAutK+EcBemThJlQcCJR8CX9/LdRKKboC6K0t75a/KVKdjOg==}
+    dependencies:
+      '@iconify/types': 2.0.0
     dev: true
 
   /@iconify/types@2.0.0:
@@ -3455,6 +3473,12 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dev: true
+
+  /mkdirp@3.0.1:
+    resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
+    engines: {node: '>=10'}
+    hasBin: true
+    dev: false
 
   /mkdist@1.3.0(typescript@5.2.2):
     resolution: {integrity: sha512-ZQrUvcL7LkRdzMREpDyg9AT18N9Tl5jc2qeKAUeEw0KGsgykbHbuRvysGAzTuGtwuSg0WQyNit5jh/k+Er3JEg==}
