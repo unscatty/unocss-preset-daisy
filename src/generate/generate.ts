@@ -1,27 +1,36 @@
 import { writeFile } from 'node:fs'
-import { CssInJs } from 'postcss-js'
 import base from './daisy-untailwind/base.js'
 import styled from './daisy-untailwind/styled.js'
 import styledRtl from './daisy-untailwind/styled.rtl.js'
 import unstyled from './daisy-untailwind/unstyled.js'
 import unstyledRtl from './daisy-untailwind/unstyled.rtl.js'
-import utilities from './daisy-untailwind/utilities.js'
 import utilitiesStyled from './daisy-untailwind/utilities-styled.js'
 import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled.js'
+import utilities from './daisy-untailwind/utilities.js'
 import {
   generateShortcutsRulesAndPreflights,
   replacePrefix,
 } from './helpers.js'
+import { applyPatches, patches } from './patch.js'
+import { patchableShortcutsMapToStaticShortcuts } from './utils.js'
 
 const styleFiles = [
-  { css: styled as CssInJs, filename: 'styled.json' },
-  { css: unstyled as CssInJs, filename: 'unstyled.json' },
-  { css: utilities as CssInJs, filename: 'utilities.json' },
-  { css: utilitiesStyled as CssInJs, filename: 'utilities-styled.json' },
-  { css: utilitiesUnstyled as CssInJs, filename: 'utilities-unstyled.json' },
-  { css: base as CssInJs, filename: 'base.json' },
-  { css: styledRtl as CssInJs, filename: 'styled.rtl.json' },
-  { css: unstyledRtl as CssInJs, filename: 'unstyled.rtl.json' },
+  { name: 'styled', css: styled, filename: 'styled.json' },
+  { name: 'unstyled', css: unstyled, filename: 'unstyled.json' },
+  { name: 'utilities', css: utilities, filename: 'utilities.json' },
+  {
+    name: 'utilities-styled',
+    css: utilitiesStyled,
+    filename: 'utilities-styled.json',
+  },
+  {
+    name: 'utilities-unstyled',
+    css: utilitiesUnstyled,
+    filename: 'utilities-unstyled.json',
+  },
+  { name: 'base', css: base, filename: 'base.json' },
+  { name: 'styled.rtl', css: styledRtl, filename: 'styled.rtl.json' },
+  { name: 'unstyled.rtl', css: unstyledRtl, filename: 'unstyled.rtl.json' },
 ]
 
 for (const styleFile of styleFiles) {
@@ -29,11 +38,22 @@ for (const styleFile of styleFiles) {
     styleFile.css
   )
 
+  const {
+    rules: patchedRules,
+    shortcuts: patchedShortcuts,
+    preflights: patchablePreflights,
+  } = applyPatches(patches, { rules, shortcuts, preflights }, styleFile.name)
+
   const jsonContent = JSON.stringify(
     {
-      rules,
-      shortcuts: [...shortcuts.entries()],
-      preflights: preflights.toString(),
+      rules: patchedRules,
+      shortcuts: patchableShortcutsMapToStaticShortcuts(patchedShortcuts, {
+        defaultMeta: {
+          layer: 'daisy-3-components',
+        },
+        uniques: true,
+      }),
+      preflights: patchablePreflights.toString(),
     },
     // eslint-disable-next-line unicorn/no-null
     null,

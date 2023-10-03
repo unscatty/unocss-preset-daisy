@@ -10,3 +10,4 @@ types
 *.env*
 *.json
 src/generate/*.js
+src/generate/patches/*.js

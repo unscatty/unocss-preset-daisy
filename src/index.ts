@@ -51,6 +51,12 @@ import {
   shortcuts as unstyledRtlShortcuts,
   preflights as unstyledRtlPreflights,
 } from './generated/unstyled.rtl.json'
+import {
+  mergePatchableShortcutsMaps,
+  patchableShortcutsMapToStaticShortcuts,
+  staticShortcutsToPatchableShortcutsMap,
+} from './generate/utils'
+import { PatchableShortcutsMap } from './generate/types'
 // import { writeFileSync } from 'fs'
 
 const processor = postcss()
@@ -81,20 +87,21 @@ export const presetDaisy = (
 
   const generatedPreflights: string[] = []
 
-  let styles: Map<string, ShortcutValue[]>
+  let styles: PatchableShortcutsMap
   let rules: StaticRule[] = []
 
   if (options.styled) {
     if (options.rtl) {
-      styles = new Map(
-        styledRtlShortcuts as unknown as [string, ShortcutValue[]][]
+      styles = staticShortcutsToPatchableShortcutsMap(
+        styledRtlShortcuts as StaticShortcut[]
       )
+
       generatedPreflights.push(styledRtlPreflights)
 
       rules = styledRtlRules as StaticRule[]
     } else {
-      styles = new Map(
-        styledShortcuts as unknown as [string, ShortcutValue[]][]
+      styles = staticShortcutsToPatchableShortcutsMap(
+        styledShortcuts as StaticShortcut[]
       )
       generatedPreflights.push(styledPreflights)
 
@@ -103,15 +110,15 @@ export const presetDaisy = (
   } else {
     // eslint-disable-next-line no-lonely-if
     if (options.rtl) {
-      styles = new Map(
-        unstyledRtlShortcuts as unknown as [string, ShortcutValue[]][]
+      styles = staticShortcutsToPatchableShortcutsMap(
+        unstyledRtlShortcuts as StaticShortcut[]
       )
       generatedPreflights.push(unstyledRtlPreflights)
 
       rules = unstyledRtlRules as StaticRule[]
     } else {
-      styles = new Map(
-        unstyledShortcuts as unknown as [string, ShortcutValue[]][]
+      styles = staticShortcutsToPatchableShortcutsMap(
+        unstyledShortcuts as StaticShortcut[]
       )
       generatedPreflights.push(unstyledPreflights)
 
@@ -121,15 +128,20 @@ export const presetDaisy = (
 
   // Merge utitlities
   if (options.utils) {
-    styles = mergeMaps(
-      styles,
-      new Map(utilitiesShortcuts as unknown as [string, ShortcutValue[]][]),
-      new Map(
-        utilitiesUnstyledShortcuts as unknown as [string, ShortcutValue[]][]
-      ),
-      new Map(
-        utilitiesStyledShortcuts as unknown as [string, ShortcutValue[]][]
-      )
+    styles = mergePatchableShortcutsMaps(
+      [
+        styles,
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesShortcuts as StaticShortcut[]
+        ),
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesUnstyledShortcuts as StaticShortcut[]
+        ),
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesStyledShortcuts as StaticShortcut[]
+        ),
+      ],
+      true
     )
 
     rules = [
@@ -180,7 +192,9 @@ export const presetDaisy = (
     'hsl'
   )
 
-  const shortcuts = [...styles.entries()]
+  const shortcuts = patchableShortcutsMapToStaticShortcuts(styles, {
+    uniques: true,
+  })
 
   return {
     name: 'unocss-preset-daisy',
@@ -206,60 +220,7 @@ export const presetDaisy = (
         ),
       },
     },
-    rules: [
-      // Add patch rule for menu item
-      [
-        'transition-menu-item',
-        {
-          'transition-property':
-            'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
-          'transition-timing-function': 'cubic-bezier(0, 0, 0.2, 1)',
-          'transition-duration': '200ms',
-        },
-      ],
-      ...rules,
-    ] as StaticRule[],
-    shortcuts: shortcuts.map((shortcut) => {
-      // PATCH SHORTCUTS
-      if (
-        shortcut[0].endsWith('-outline') ||
-        shortcut[0] === 'collapse-content'
-      ) {
-        if (shortcut[0] === 'collapse-content') {
-          const collapseContentPrefixToRemove =
-            'selector-[.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_.collapse-content]:'
-          const filteredShortcuts = shortcut[1].filter(
-            (shortcut) =>
-              typeof shortcut === 'string' &&
-              !shortcut.startsWith(collapseContentPrefixToRemove)
-          )
-
-          return [
-            shortcut[0],
-            filteredShortcuts,
-            { layer: 'daisy-4-components' },
-          ] as StaticShortcut
-        }
-
-        return [
-          shortcut[0],
-          shortcut[1],
-          { layer: 'daisy-4-components' },
-        ] as StaticShortcut
-      }
-
-      if (shortcut[0] === 'menu') {
-        const menuItemPatch =
-          'selector-[.menu_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_.menu_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))]:transition-menu-item'
-
-        return [shortcut[0], [...shortcut[1], menuItemPatch]] as StaticShortcut
-      }
-
-      return [
-        shortcut[0],
-        shortcut[1],
-        { layer: 'daisy-3-components' },
-      ] as StaticShortcut
-    }),
+    rules,
+    shortcuts,
   }
 }

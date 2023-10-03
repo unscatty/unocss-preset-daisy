@@ -7,7 +7,10 @@ import { parse, type CssInJs } from 'postcss-js'
 import { parse as parseCSSValue } from 'postcss-values-parser'
 import { CSSEntries, ShortcutValue, StaticRule as UnoStaticRule } from 'unocss'
 
-export const mergeMaps = (...maps: Map<string, ShortcutValue[]>[]) => {
+export const mergeMaps = (
+  maps: Map<string, ShortcutValue[]>[],
+  uniques = false
+) => {
   if (maps.length === 0) {
     return new Map<string, ShortcutValue[]>()
   }
@@ -23,6 +26,13 @@ export const mergeMaps = (...maps: Map<string, ShortcutValue[]>[]) => {
       } else {
         mergedMap.set(key, value)
       }
+    }
+  }
+
+  if (uniques) {
+    // Remove duplicate shortcut values
+    for (const [key, value] of mergedMap) {
+      mergedMap.set(key, [...new Set(value)])
     }
   }
 
@@ -137,7 +147,7 @@ export const generateShortcuts = (
           `media-[${node.params.replace(/ /g, '_')}]:`
         )
 
-      generatedShortcuts = mergeMaps(generatedShortcuts, nestedShortcuts)
+      generatedShortcuts = mergeMaps([generatedShortcuts, nestedShortcuts])
       toPreflights.push(...nestedPreflights)
 
       continue

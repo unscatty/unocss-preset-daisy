@@ -32,6 +32,7 @@
     "test:types": "tsc --noEmit --skipLibCheck",
     "generate": "mkdirp src/generated && node src/generate/generate.js",
     "generate:compile": "tsc --project src/generate/tsconfig.json",
+    "generate:compile:clean": "rm src/generate/*.js && rm src/generate/patches/*.js",
     "generate:clean": "rm -rf src/generated/"
   },
   "devDependencies": {

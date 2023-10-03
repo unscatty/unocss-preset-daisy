@@ -1,8 +1,4 @@
 {
-  "files": [
-    "generate.ts",
-    "helpers.ts",
-  ],
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -10,4 +6,7 @@
     "esModuleInterop": true,
     "strict": true,
   },
+  "include": [
+    "./"
+  ]
 }
