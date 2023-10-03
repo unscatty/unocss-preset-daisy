@@ -46,7 +46,7 @@ export const extractAndRemoveKeyframes = (css: CssInJs) => {
 }
 
 export const getAllClassTokens = (
-  cssSelector: string,
+  cssSelector: string
 ): [classTokens: string[], isSingleClass: boolean] => {
   const selectorTokenized = tokenizeSelector(cssSelector)
 
@@ -88,7 +88,7 @@ export const getAllClassTokens = (
 
 const mergeIntoMap = (
   map: Map<string, ShortcutValue[]>,
-  entry: { key: string; value: ShortcutValue[] },
+  entry: { key: string; value: ShortcutValue[] }
 ) => {
   if (map.has(entry.key)) {
     const existingValue = map.get(entry.key)!
@@ -114,7 +114,7 @@ const makeid = (length: number) => {
 
 export const generateShortcuts = (
   css: postcss.ChildNode[],
-  prefix = '',
+  prefix = ''
 ): {
   rules: UnoStaticRule[]
   shortcuts: Map<string, ShortcutValue[]>
@@ -134,7 +134,7 @@ export const generateShortcuts = (
       const { shortcuts: nestedShortcuts, toPreflights: nestedPreflights } =
         generateShortcuts(
           node.nodes,
-          `media-[${node.params.replace(/ /g, '_')}]:`,
+          `media-[${node.params.replace(/ /g, '_')}]:`
         )
 
       generatedShortcuts = mergeMaps(generatedShortcuts, nestedShortcuts)
@@ -252,8 +252,8 @@ export const generateShortcuts = (
               (value) =>
                 `${prefix}selector-[${ruleSelector.replace(
                   /\s+/g,
-                  '_',
-                )}]:${value}`,
+                  '_'
+                )}]:${value}`
             ),
           })
 
@@ -272,7 +272,7 @@ export const generateShortcuts = (
               value: [
                 `${prefix}selector-[${ruleSelector.replace(
                   /\s+/g,
-                  '_',
+                  '_'
                 )}]:[${originalProp}:var(${preflightVar})]`,
               ],
             })
@@ -296,7 +296,7 @@ export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
     extractAndRemoveKeyframes(css)
 
   const { rules, shortcuts, toPreflights } = generateShortcuts(
-    nodesWithoutKeyframes.nodes as postcss.ChildNode[],
+    nodesWithoutKeyframes.nodes as postcss.ChildNode[]
   )
 
   const preflightsRules: postcss.ChildNode[] = []

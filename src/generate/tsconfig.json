@@ -1,14 +1,13 @@
 {
+  "files": [
+    "generate.ts",
+    "helpers.ts",
+  ],
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": true,
-    "resolveJsonModule": true,
-    "baseUrl": "./"
   },
-  "include": [
-    "src"
-  ]
 }
