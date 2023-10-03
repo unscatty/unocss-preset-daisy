@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.5.4",
+    "@types/postcss-js": "^4.0.2",
     "@vitest/coverage-v8": "^0.34.2",
     "changelogen": "^0.5.5",
     "eslint": "^8.47.0",
@@ -40,7 +41,18 @@
     "prettier": "^3.0.2",
     "typescript": "^5.1.6",
     "unbuild": "^2.0.0",
+    "unocss": "^0.56.4",
     "vitest": "^0.34.2"
   },
-  "packageManager": "pnpm@8.6.12"
+  "packageManager": "pnpm@8.6.12",
+  "dependencies": {
+    "@tailwindcss/nesting": "0.0.0-insiders.565cd3e",
+    "parsel-js": "^1.1.2",
+    "postcss": "^8.4.31",
+    "postcss-js": "^4.0.1",
+    "postcss-values-parser": "^6.0.2"
+  },
+  "peerDependencies": {
+    "unocss": "^0.56.4"
+  }
 }
