@@ -1,6 +1,6 @@
 {
   "name": "@unscatty/unocss-preset-daisy",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "UnoCSS preset for daisyUI",
   "repository": "unscatty/unocss-preset-daisy",
   "author": "Carlos Aguilera",
@@ -27,7 +27,7 @@
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
     "prepack": "pnpm run build",
-    "release": "changelogen --release && npm publish && git push --follow-tags",
+    "release": "changelogen --release && npm publish --access public && git push --follow-tags",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
     "generate": "mkdirp src/generated && node src/generate/generate.js",
