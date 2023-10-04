@@ -60,6 +60,8 @@ for (const styleFile of styleFiles) {
     2
   )
 
+  console.log(`Generating shortcuts for ${styleFile.filename} components`)
+
   writeFile(
     `./src/generated/${styleFile.filename}`,
     replacePrefix(jsonContent),
