@@ -1,0 +1,42 @@
+name: GitHub Pages CICD
+run-name: ${{ github.actor }} is deploying to GitHub Pages 🚀
+on:
+  push:
+    branches:
+      - main
+jobs:
+  Build-And-Deploy-To-GH-Pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        id: pnpm-install
+        with:
+          version: 8
+          run_install: true
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Create env file
+        run: |
+          echo "${{ secrets.DEPLOY_GH_PAGES_ENV }}" > .env.gh-pages.local
+
+      - name: Build static site
+        run: pnpm run build --mode gh-pages
+
+      - name: Deploy to Github pages
+        uses: crazy-max/ghaction-github-pages@v3
+        with:
+          target_branch: gh-pages
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

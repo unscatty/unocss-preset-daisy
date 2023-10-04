@@ -167,7 +167,7 @@ export const presetDaisy = (
   if (options.base) {
     preflights.unshift({
       getCSS: () => basePreflights as string,
-      layer: 'daisy-0-base',
+      layer: 'daisy-1-base',
     })
   }
 

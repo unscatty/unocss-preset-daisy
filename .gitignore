@@ -12,3 +12,4 @@ types
 src/generate/*.js
 src/generate/patches/*.js
 src/generate/dist
+demo
