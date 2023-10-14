@@ -4,15 +4,16 @@ import styled from './daisy-untailwind/styled'
 import styledRtl from './daisy-untailwind/styled.rtl'
 import unstyled from './daisy-untailwind/unstyled'
 import unstyledRtl from './daisy-untailwind/unstyled.rtl'
+import utilities from './daisy-untailwind/utilities'
 import utilitiesStyled from './daisy-untailwind/utilities-styled'
 import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
-import utilities from './daisy-untailwind/utilities'
 import {
   generateShortcutsRulesAndPreflights,
   replacePrefix,
+  replaceSlash,
 } from './helpers'
 import { applyPatches, patches } from './patch'
-import { patchableShortcutsMapToStaticShortcuts } from './utils'
+import { ShortcutWrapper } from './types'
 
 const styleFiles = [
   { name: 'styled', css: styled, filename: 'styled.json' },
@@ -41,19 +42,23 @@ for (const styleFile of styleFiles) {
   const {
     rules: patchedRules,
     shortcuts: patchedShortcuts,
-    preflights: patchablePreflights,
+    preflights: patchedPreflights,
   } = applyPatches(patches, { rules, shortcuts, preflights }, styleFile.name)
 
   const jsonContent = JSON.stringify(
     {
       rules: patchedRules,
-      shortcuts: patchableShortcutsMapToStaticShortcuts(patchedShortcuts, {
-        defaultMeta: {
-          layer: 'daisy-3-components',
-        },
-        uniques: true,
-      }),
-      preflights: patchablePreflights.toString(),
+      shortcuts: [...patchedShortcuts.entries()].map(([key, value]) => [
+        key,
+        {
+          ...value,
+          meta: {
+            layer: 'daisy-3-components',
+            ...value.meta,
+          },
+        } as ShortcutWrapper,
+      ]),
+      preflights: replaceSlash(patchedPreflights.toString()),
     },
     // eslint-disable-next-line unicorn/no-null
     null,

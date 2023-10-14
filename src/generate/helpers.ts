@@ -1,18 +1,24 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { tokenize as tokenizeSelector } from 'parsel-js'
+import { ClassToken, tokenize as tokenizeSelector } from 'parsel-js'
 import postcss from 'postcss'
 // @ts-ignore
 import tailwindNesting from '@tailwindcss/nesting'
 import { parse, type CssInJs } from 'postcss-js'
-import { parse as parseCSSValue } from 'postcss-values-parser'
-import { CSSEntries, ShortcutValue, StaticRule as UnoStaticRule } from 'unocss'
+import { Arrayable, CSSEntries, StaticRule as UnoStaticRule } from 'unocss'
+import {
+  DynamicShortcutInfo,
+  ShortcutInfo,
+  ShortcutWrapper,
+  StaticShortcutInfo,
+} from './types'
+import { normalizeSelector, replaceSubByIndexes } from './utils'
 
 export const mergeMaps = (
-  maps: Map<string, ShortcutValue[]>[],
+  maps: Map<string, ShortcutWrapper>[],
   uniques = false
 ) => {
   if (maps.length === 0) {
-    return new Map<string, ShortcutValue[]>()
+    return new Map<string, ShortcutWrapper>()
   }
 
   const mergedMap = new Map(structuredClone(maps[0]))
@@ -22,19 +28,26 @@ export const mergeMaps = (
       if (mergedMap.has(key)) {
         const exisitingValue = mergedMap.get(key)!
 
-        mergedMap.set(key, [...exisitingValue, ...value])
+        mergedMap.set(key, {
+          isDynamic: exisitingValue.isDynamic || value.isDynamic,
+          shortcuts: [...exisitingValue.shortcuts, ...value.shortcuts],
+          meta:
+            value.meta || exisitingValue.meta
+              ? { ...exisitingValue.meta, ...value.meta }
+              : undefined,
+        })
       } else {
         mergedMap.set(key, value)
       }
     }
   }
 
-  if (uniques) {
-    // Remove duplicate shortcut values
-    for (const [key, value] of mergedMap) {
-      mergedMap.set(key, [...new Set(value)])
-    }
-  }
+  // TODO: remove duplicate shortcut values
+  // if (uniques) {
+  //   for (const [key, value] of mergedMap) {
+  //     mergedMap.set(key, [...new Set(value)])
+  //   }
+  // }
 
   return mergedMap
 }
@@ -55,13 +68,19 @@ export const extractAndRemoveKeyframes = (css: CssInJs) => {
   return { keyframes, updatedNodes: ast }
 }
 
+// TODO: get class names from class tokens
+// TODO: check if selector is complex (has a present comma or combinator token)
 export const getAllClassTokens = (
   cssSelector: string
-): [classTokens: string[], isSingleClass: boolean] => {
+): [
+  classNames: string[],
+  isSingleClass: boolean,
+  classTokens: ClassToken[],
+] => {
   const selectorTokenized = tokenizeSelector(cssSelector)
 
   if (!selectorTokenized) {
-    return [[], false]
+    return [[], false, []]
   }
 
   // If first token is class and is the only token, return it
@@ -69,43 +88,79 @@ export const getAllClassTokens = (
     selectorTokenized.length === 1 &&
     selectorTokenized[0]?.type === 'class'
   ) {
-    return [[selectorTokenized[0]!.name], true]
+    return [[selectorTokenized[0]!.name], true, [selectorTokenized[0]!]]
   }
 
-  const result: string[] = []
+  const classNames: string[] = []
+  const classTokens: ClassToken[] = []
 
   // Traverse the parsed selector tree to find all class tokens
   for (const token of selectorTokenized) {
     if (token.type === 'class') {
-      result.push(token.name)
+      classNames.push(token.name)
+      classTokens.push(token)
     }
 
     if (token.type === 'pseudo-class' && token.argument) {
       // If the pseudo class has an argument, it is a function-like pseudo class
       // like :is(), :has(), :not() etc. and we should traverse its children
       // to find the nested class tokens
-      const [nestedResult] = getAllClassTokens(token.argument)
+      const [nestedClassNames, , nestedClassTokens] = getAllClassTokens(
+        token.argument
+      )
 
       // If a class token was found in nested pseudo class, return it
-      if (nestedResult.length > 0) {
-        result.push(...nestedResult)
+      if (nestedClassNames.length > 0) {
+        classNames.push(...nestedClassNames)
+        classTokens.push(
+          ...nestedClassTokens.map((nestedClassToken) => ({
+            ...nestedClassToken,
+            pos: [
+              nestedClassToken.pos[0] + token.pos[0] + token.name.length + 2,
+              nestedClassToken.pos[1] + token.pos[0] + token.name.length + 2,
+            ] as [number, number],
+          }))
+        )
       }
     }
   }
 
-  return [[...new Set(result)], false]
+  return [[...new Set(classNames)], false, classTokens]
 }
 
 const mergeIntoMap = (
-  map: Map<string, ShortcutValue[]>,
-  entry: { key: string; value: ShortcutValue[] }
+  map: Map<string, ShortcutWrapper>,
+  entry: { key: string; value: Arrayable<ShortcutInfo> }
 ) => {
   if (map.has(entry.key)) {
     const existingValue = map.get(entry.key)!
 
-    map.set(entry.key, [...existingValue, ...entry.value])
+    const isDynamic =
+      existingValue.isDynamic ||
+      (Array.isArray(entry.value)
+        ? entry.value.some((value) => value.isDynamic)
+        : entry.value.isDynamic)
+
+    map.set(entry.key, {
+      ...existingValue,
+      isDynamic,
+      shortcuts: [
+        ...existingValue.shortcuts,
+        ...(Array.isArray(entry.value) ? entry.value : [entry.value]),
+      ],
+    })
+  } else if (Array.isArray(entry.value)) {
+    const isDynamic = entry.value.some((value) => value.isDynamic)
+
+    map.set(entry.key, {
+      isDynamic,
+      shortcuts: entry.value,
+    })
   } else {
-    map.set(entry.key, entry.value)
+    map.set(entry.key, {
+      isDynamic: entry.value.isDynamic,
+      shortcuts: [entry.value],
+    })
   }
 }
 
@@ -122,17 +177,19 @@ const makeid = (length: number) => {
   return result
 }
 
+// // TODO: if selector, create a new rule
+// // TODO: mark shortcut as dynamic if more than one class token is found
+// // TODO: mark generated rules as internal
+// FIXME: check for ghost rules (glass, btn glass and btn-active)
 export const generateShortcuts = (
   css: postcss.ChildNode[],
   prefix = ''
 ): {
   rules: UnoStaticRule[]
-  shortcuts: Map<string, ShortcutValue[]>
+  shortcuts: Map<string, ShortcutWrapper>
   toPreflights: (postcss.Rule | postcss.Declaration)[]
 } => {
-  // TODO: if prefix is empty, use CSS object approach
-
-  let generatedShortcuts = new Map<string, ShortcutValue[]>()
+  let generatedShortcuts = new Map<string, ShortcutWrapper>()
 
   // Rules generated from raw CSS declarations
   const generatedRules: UnoStaticRule[] = []
@@ -144,7 +201,7 @@ export const generateShortcuts = (
       const { shortcuts: nestedShortcuts, toPreflights: nestedPreflights } =
         generateShortcuts(
           node.nodes,
-          `media-[${node.params.replace(/ /g, '_')}]:`
+          `media-[${normalizeSelector(node.params)}]:`
         )
 
       generatedShortcuts = mergeMaps([generatedShortcuts, nestedShortcuts])
@@ -154,23 +211,29 @@ export const generateShortcuts = (
     }
 
     if (node.type === 'rule') {
-      const toPreflightVars: postcss.Declaration[] = []
-      const shortcutValues: ShortcutValue[] = []
+      const shortcutValues: string[] = []
 
-      let currentGeneratedRule: CSSEntries = []
+      let currentRuleEntries: CSSEntries = []
 
       const ruleSelector = node.selector
-      const [classTokens, isSingleClass] = getAllClassTokens(ruleSelector)
+      const [classNames, isSingleClass, classTokens] =
+        getAllClassTokens(ruleSelector)
 
       // Shortcut generation
+      // TODO: if prefix is empty, use CSS object approach
       for (const child of node.nodes) {
         if (child.type === 'atrule' && child.name === 'apply') {
           // Add rule to generated rules if there are declarations
-          if (currentGeneratedRule.length > 0) {
-            const ruleName = `rule-${classTokens[0]!}-${makeid(8)}`
+          if (currentRuleEntries.length > 0) {
+            const ruleName = `rule-${classNames[0]!}-${makeid(8)}`
 
-            generatedRules.push([ruleName, currentGeneratedRule])
-            currentGeneratedRule = []
+            generatedRules.push([
+              ruleName,
+              currentRuleEntries,
+              { internal: true },
+            ])
+
+            currentRuleEntries = []
 
             // Add rule to shortcut values
             shortcutValues.push(ruleName)
@@ -183,110 +246,66 @@ export const generateShortcuts = (
         }
 
         if (child.type === 'decl') {
-          const value = child.value
-          const parsedCSSValue = parseCSSValue(value).first!
-
-          // URL function
-          if (parsedCSSValue.type === 'func' && parsedCSSValue.name === 'url') {
-            // Get function arguments
-            toPreflightVars.push(child)
-
-            continue
-          }
-
-          // content: ""
-          if (child.prop === 'content' && value === '""') {
-            shortcutValues.push(`content-[""]`)
-
-            continue
-          }
-
-          // FIXME: if styles are still broken, use only rule aproximation
-          // If selector is single class, add the value as a static CSS Object
-          // if (isSingleClass) {
-          //   shortcutValues.push([[child.prop, value]])
-          // } else {
           // Add CSS declaration to the generated rule CSS declarations
-          currentGeneratedRule.push([child.prop, value])
-          // }
-
-          // // Add the value as a variable variant
-          // shortcutValues.push(`[${child.prop}:${value.replace(/\s+/g, '_')}]`)
+          currentRuleEntries.push([child.prop, child.value])
         }
       }
 
       // Add rule to generated rules if there are declarations left
-      if (currentGeneratedRule.length > 0) {
-        const ruleName = `rule-${classTokens[0]!}-${makeid(8)}`
+      if (currentRuleEntries.length > 0) {
+        const ruleName = `rule-${classNames[0]!}-${makeid(8)}`
 
-        generatedRules.push([ruleName, currentGeneratedRule])
-        currentGeneratedRule = []
+        generatedRules.push([
+          ruleName,
+          currentRuleEntries,
+          { internal: true },
+        ])
+        currentRuleEntries = []
 
         // Add rule to shortcut values
         shortcutValues.push(ruleName)
       }
 
       // Selector generation
-      if (classTokens.length === 0) {
+      if (classNames.length === 0) {
         // If there are no class tokens, add it to the preflights list
         toPreflights.push(node)
-      } else if (classTokens.length === 1 && isSingleClass) {
+      } else if (classNames.length === 1 && isSingleClass) {
         // If there is only one class token, it is the base class
-        const classToken = classTokens[0]!
+        const classToken = classNames[0]!
 
+        // Is an static shortcut
         mergeIntoMap(generatedShortcuts, {
           key: classToken,
-          value: shortcutValues.map((value) => `${prefix}${value}`),
+          value: {
+            isDynamic: false,
+            values: shortcutValues.map((value) => `${prefix}${value}`),
+          } as StaticShortcutInfo,
         })
-
-        for (const node of toPreflightVars) {
-          const preflightVar = `--${classToken}-${makeid(8)}`
-
-          const originalProp = node.prop
-          node.prop = preflightVar
-
-          toPreflights.push(node)
-
-          mergeIntoMap(generatedShortcuts, {
-            key: classToken,
-            value: [`${prefix}[${originalProp}:var(${preflightVar})]`],
-          })
-        }
       } else {
         // For every class token, add it to the shortcuts map
         // Add selector prefix
-        for (const classToken of classTokens) {
+        for (const className of classNames) {
+          const selectorWithNest = normalizeSelector(
+            replaceSubByIndexes(
+              ruleSelector,
+              classTokens
+                .filter((token) => token.name === className)
+                .map((token) => ['&', token.pos[0], token.pos[1]])
+            )
+          )
+
           mergeIntoMap(generatedShortcuts, {
-            key: classToken,
-            value: shortcutValues.map(
-              (value) =>
-                `${prefix}selector-[${ruleSelector.replace(
-                  /\s+/g,
-                  '_'
-                )}]:${value}`
-            ),
+            key: className,
+            value: {
+              isDynamic: true,
+              rawSelector: ruleSelector,
+              normalizedSelector: normalizeSelector(ruleSelector),
+              selectorWithNest,
+              media: prefix,
+              values: shortcutValues,
+            } as DynamicShortcutInfo,
           })
-
-          for (const node of toPreflightVars) {
-            const preflightVar = `--${classToken}-${makeid(8)}`
-
-            const clonedNode = node.clone()
-
-            const originalProp = clonedNode.prop
-            clonedNode.prop = preflightVar
-
-            toPreflights.push(clonedNode)
-
-            mergeIntoMap(generatedShortcuts, {
-              key: classToken,
-              value: [
-                `${prefix}selector-[${ruleSelector.replace(
-                  /\s+/g,
-                  '_'
-                )}]:[${originalProp}:var(${preflightVar})]`,
-              ],
-            })
-          }
         }
       }
     }
@@ -300,6 +319,9 @@ export const generateShortcuts = (
 }
 
 export const replacePrefix = (css: string) => css.replace(/--tw-/g, '--un-')
+// UnoCSS uses comma syntax
+// var(--foo) / 0.1 -> var(--foo), 0.1
+export const replaceSlash = (css: string) => css.replaceAll(') / ', '), ')
 
 export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
   const { updatedNodes: nodesWithoutKeyframes, keyframes } =
@@ -331,5 +353,5 @@ export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
     preflights.prepend(preflightsRootNode)
   }
 
-  return { rules, shortcuts, preflights } as const
+  return { rules, shortcuts, preflights }
 }

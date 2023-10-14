@@ -1,4 +1,4 @@
-import { type Patch } from '../types'
+import { ShortcutInfo, type Patch } from '../types'
 
 export const patchCollapseContent: Patch = (
   { rules, shortcuts, preflights },
@@ -15,22 +15,23 @@ export const patchCollapseContent: Patch = (
   const collapseContentShortcut = shortcuts.get('collapse-content')
 
   if (collapseContentShortcut) {
-    const collapseContentPrefixToRemove =
-      'selector-[.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_.collapse-content]:'
+    const collapseContentNormalizedSelector =
+      '.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_.collapse-content'
 
-    const valuesArray =
-      typeof collapseContentShortcut.values === 'string'
-        ? collapseContentShortcut.values.split(' ')
-        : collapseContentShortcut.values
+    const filteredShortcuts: ShortcutInfo[] = collapseContentShortcut.shortcuts.filter(
+      (shortcut) => {
+        if (shortcut.isDynamic) {
+          // Remove the dynamic selector if matches the collapse content selector
+          return shortcut.normalizedSelector !== collapseContentNormalizedSelector
+        }
 
-    const filteredShortcuts = valuesArray.filter(
-      (shortcut) =>
-        typeof shortcut === 'string' &&
-        !shortcut.startsWith(collapseContentPrefixToRemove)
+        return true
+      }
     )
 
     shortcuts.set('collapse-content', {
-      values: filteredShortcuts,
+      isDynamic: collapseContentShortcut.isDynamic,
+      shortcuts: filteredShortcuts,
       meta: { layer: 'daisy-4-components' },
     })
   }
