@@ -2,7 +2,7 @@
 
 Fully (i think so) compatible [UnoCSS](https://github.com/unocss/unocss) preset for [daisyUI](https://github.com/saadeghi/daisyui)
 
-Variants (hover, focus, etc.) supported.
+Variants (hover, focus, breakpoints: sm, md, etc.) supported.
 
 This is a rework of kidonng's [unocss-preset-daisy](https://github.com/kidonng/unocss-preset-daisy) to make it work with UnoCSS variants, kudos to him for the original work.
 
@@ -115,7 +115,7 @@ If you are concerned about this, you can use something like [PurgeCSS](https://p
 
 ## TODO
 - [ ] Make demo less ugly. Organize components in their own pages, add more components, etc.
-- [ ] Fix unused code generation (move keyframes to preset config insted of preflights, convert variables to CSS object definition).
+- [x] Fix unused code generation (move keyframes to preset config insted of preflights, convert variables to CSS object definition). Still need to move keyframes to config.
 - [ ] Make it possible to extend components using shortcuts, scoped by theme. Potentially by using the [unocss-preset-theme](https://github.com/unpreset/unocss-preset-theme). So, defining a new theme would be way easier.
 - [ ] Rename functions to make it more clear what they do.
 - [ ] Add tests

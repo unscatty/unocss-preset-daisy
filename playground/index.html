@@ -97,6 +97,7 @@
       <button class="btn btn-accent">Accent</button>
       <button class="btn btn-ghost">Ghost</button>
       <button class="btn btn-link">Link</button>
+      <button class="btn glass">Glass button</button>
     </div>
     <div>
       <h4 class="font-bold">Buttons with state colors</h4>
@@ -352,6 +353,40 @@
   </div>
 
   <div class="my-4">
+    <h3 class="text-xl">Chat with image, header and footer</h3>
+    <div class="chat chat-start">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+        </div>
+      </div>
+      <div class="chat-header">
+        Obi-Wan Kenobi
+        <time class="text-xs opacity-50">12:45</time>
+      </div>
+      <div class="chat-bubble hover:chat-bubble-secondary">You were the Chosen One!</div>
+      <div class="chat-footer opacity-50">
+        Delivered
+      </div>
+    </div>
+    <div class="chat chat-end">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+        </div>
+      </div>
+      <div class="chat-header">
+        Anakin
+        <time class="text-xs opacity-50">12:46</time>
+      </div>
+      <div class="chat-bubble">I hate you!</div>
+      <div class="chat-footer opacity-50">
+        Seen at 12:46
+      </div>
+    </div>
+  </div>
+
+  <div class="my-4">
     <h3 class="text-xl">Chat with colors</h3>
     <div class="chat chat-start">
       <div class="chat-bubble chat-bubble-primary">What kind of nonsense is this</div>
@@ -443,7 +478,7 @@
 
   <div class="my-4">
     <h3 class="font-bold my-1 text-xl">Mask</h3>
-    <img class="mask mask-squircle" src="https://daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.jpg" />
+    <img class="mask mask-squircle sm:hover:mask-star-2" src="https://daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.jpg" />
   </div>
 
   <h2 class="my-2 text-3xl">Navigation</h2>
@@ -526,10 +561,39 @@
   <div class="my-4">
     <h3 class="font-bold my-1 text-xl">Steps</h3>
     <ul class="steps">
-      <li class="step step-primary">Register</li>
+      <li data-content="🌜" class="step step-primary step-secondary">Register</li>
       <li class="step step-primary">Choose plan</li>
       <li class="step">Purchase</li>
       <li class="step">Receive Product</li>
+    </ul>
+  </div>
+
+  <div class="overflow-x-auto">
+    <ul class="steps">
+      <li class="step">start</li>
+      <li class="step step-secondary">2</li>
+      <li class="step step-secondary">3</li>
+      <li class="step step-secondary">4</li>
+      <li class="step">5</li>
+      <li class="step step-accent">6</li>
+      <li class="step step-accent">7</li>
+      <li class="step">8</li>
+      <li class="step step-error">9</li>
+      <li class="step step-error">10</li>
+      <li class="step">11</li>
+      <li class="step">12</li>
+      <li class="step step-warning">13</li>
+      <li class="step step-warning">14</li>
+      <li class="step">15</li>
+      <li class="step step-neutral">16</li>
+      <li class="step step-neutral">17</li>
+      <li class="step step-neutral">18</li>
+      <li class="step step-neutral">19</li>
+      <li class="step step-neutral">20</li>
+      <li class="step step-neutral">21</li>
+      <li class="step step-neutral">22</li>
+      <li class="step step-neutral">23</li>
+      <li class="step step-neutral">end</li>
     </ul>
   </div>
 
