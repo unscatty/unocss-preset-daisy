@@ -2,51 +2,62 @@
 import postcss from 'postcss'
 import { parse, type CssInJs } from 'postcss-js'
 
+import {
+  type Preset,
+  type Preflight,
+  type StaticShortcut,
+  type ShortcutValue,
+  StaticRule,
+} from 'unocss'
 import camelCase from 'camelcase'
-import colorFunctions from 'daisyui/src/theming/functions'
 import colors from 'daisyui/src/theming/index'
 import themes from 'daisyui/src/theming/themes'
-import { StaticRule, type Preflight, type Preset } from 'unocss'
+import colorFunctions from 'daisyui/src/theming/functions'
 import { mergeMaps } from './generate/helpers'
 
-import { GeneratedShortcutsMap } from './generate/types'
-import { generatedShortcutsToShortcuts } from './generate/utils'
 import { preflights as basePreflights } from './generated/base.json'
 import {
-  preflights as styledPreflights,
-  rules as styledRules,
-  shortcuts as styledShortcuts,
-} from './generated/styled.json'
-import {
-  preflights as styledRtlPreflights,
-  rules as styledRtlRules,
-  shortcuts as styledRtlShortcuts,
-} from './generated/styled.rtl.json'
-import {
-  preflights as unstyledPreflights,
-  rules as unstyledRules,
-  shortcuts as unstyledShortcuts,
-} from './generated/unstyled.json'
-import {
-  preflights as unstyledRtlPreflights,
-  rules as unstyledRtlRules,
-  shortcuts as unstyledRtlShortcuts,
-} from './generated/unstyled.rtl.json'
-import {
-  preflights as utilitiesStyledPreflights,
-  rules as utilitiesStyledRules,
-  shortcuts as utilitiesStyledShortcuts,
-} from './generated/utilities-styled.json'
-import {
-  preflights as utilitiesUnstyledPreflights,
-  rules as utilitiesUnstyledRules,
-  shortcuts as utilitiesUnstyledShortcuts,
-} from './generated/utilities-unstyled.json'
-import {
-  preflights as utilitiesPreflights,
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
+  preflights as utilitiesPreflights,
 } from './generated/utilities.json'
+import {
+  rules as utilitiesUnstyledRules,
+  shortcuts as utilitiesUnstyledShortcuts,
+  preflights as utilitiesUnstyledPreflights,
+} from './generated/utilities-unstyled.json'
+import {
+  rules as utilitiesStyledRules,
+  shortcuts as utilitiesStyledShortcuts,
+  preflights as utilitiesStyledPreflights,
+} from './generated/utilities-styled.json'
+import {
+  rules as styledRules,
+  shortcuts as styledShortcuts,
+  preflights as styledPreflights,
+} from './generated/styled.json'
+import {
+  rules as styledRtlRules,
+  shortcuts as styledRtlShortcuts,
+  preflights as styledRtlPreflights,
+} from './generated/styled.rtl.json'
+import {
+  rules as unstyledRules,
+  shortcuts as unstyledShortcuts,
+  preflights as unstyledPreflights,
+} from './generated/unstyled.json'
+import {
+  rules as unstyledRtlRules,
+  shortcuts as unstyledRtlShortcuts,
+  preflights as unstyledRtlPreflights,
+} from './generated/unstyled.rtl.json'
+import {
+  mergePatchableShortcutsMaps,
+  patchableShortcutsMapToStaticShortcuts,
+  staticShortcutsToPatchableShortcutsMap,
+} from './generate/utils'
+import { PatchableShortcutsMap } from './generate/types'
+// import { writeFileSync } from 'fs'
 
 const processor = postcss()
 const process = (object: CssInJs) =>
@@ -55,7 +66,8 @@ const process = (object: CssInJs) =>
 const replaceSpace = (css: string) =>
   // HSL
   // 123 4% 5% -> 123, 4%, 5%
-  css.replace(/([\d.]+) ([\d%.]+) ([\d%.]+)/g, '$1, $2, $3')
+  // eslint-disable-next-line unicorn/better-regex
+  css.replace(/([\d.]+) ([\d.%]+) ([\d.%]+)/g, '$1, $2, $3')
 
 const defaultOptions = {
   styled: true,
@@ -75,19 +87,22 @@ export const presetDaisy = (
 
   const generatedPreflights: string[] = []
 
-  let styles: GeneratedShortcutsMap
+  let styles: PatchableShortcutsMap
   let rules: StaticRule[] = []
 
   if (options.styled) {
     if (options.rtl) {
-      styles = styledRtlShortcuts as unknown as GeneratedShortcutsMap
+      styles = staticShortcutsToPatchableShortcutsMap(
+        styledRtlShortcuts as StaticShortcut[]
+      )
 
       generatedPreflights.push(styledRtlPreflights)
 
       rules = styledRtlRules as StaticRule[]
     } else {
-      styles = styledShortcuts as unknown as GeneratedShortcutsMap
-
+      styles = staticShortcutsToPatchableShortcutsMap(
+        styledShortcuts as StaticShortcut[]
+      )
       generatedPreflights.push(styledPreflights)
 
       rules = styledRules as StaticRule[]
@@ -95,14 +110,16 @@ export const presetDaisy = (
   } else {
     // eslint-disable-next-line no-lonely-if
     if (options.rtl) {
-      styles = unstyledRtlShortcuts as unknown as GeneratedShortcutsMap
-
+      styles = staticShortcutsToPatchableShortcutsMap(
+        unstyledRtlShortcuts as StaticShortcut[]
+      )
       generatedPreflights.push(unstyledRtlPreflights)
 
       rules = unstyledRtlRules as StaticRule[]
     } else {
-      styles = unstyledShortcuts as unknown as GeneratedShortcutsMap
-
+      styles = staticShortcutsToPatchableShortcutsMap(
+        unstyledShortcuts as StaticShortcut[]
+      )
       generatedPreflights.push(unstyledPreflights)
 
       rules = unstyledRules as StaticRule[]
@@ -111,12 +128,18 @@ export const presetDaisy = (
 
   // Merge utitlities
   if (options.utils) {
-    styles = mergeMaps(
+    styles = mergePatchableShortcutsMaps(
       [
         styles,
-        utilitiesShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesUnstyledShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesStyledShortcuts as unknown as GeneratedShortcutsMap,
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesShortcuts as StaticShortcut[]
+        ),
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesUnstyledShortcuts as StaticShortcut[]
+        ),
+        staticShortcutsToPatchableShortcutsMap(
+          utilitiesStyledShortcuts as StaticShortcut[]
+        ),
       ],
       true
     )
@@ -138,7 +161,6 @@ export const presetDaisy = (
   const preflights: Preflight[] = [
     {
       getCSS: () => generatedPreflights.join('\n'),
-      layer: 'daisy-1-base',
     },
   ]
 
@@ -170,7 +192,9 @@ export const presetDaisy = (
     'hsl'
   )
 
-  const shortcuts = generatedShortcutsToShortcuts(styles)
+  const shortcuts = patchableShortcutsMapToStaticShortcuts(styles, {
+    uniques: true,
+  })
 
   return {
     name: 'unocss-preset-daisy',

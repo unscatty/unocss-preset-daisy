@@ -1,9 +1,6 @@
-import {
-  patchCollapseContent,
-  patchMenuItem,
-  patchOutlined,
-} from './patches/index'
-import { GeneratedAssets, Patch } from './types'
+import { patchCollapseContent, patchMenuItem, patchOutlined } from './patches/index'
+import { GeneratedAssets, Patch, PatchableAssets } from './types'
+import { generatedShortcutsMapToPatchableShortcutsMap } from './utils'
 
 export const patches = [patchCollapseContent, patchMenuItem, patchOutlined]
 
@@ -11,8 +8,9 @@ export const applyPatches = (
   patches: Patch[],
   { rules, shortcuts, preflights }: GeneratedAssets,
   styleName: string
-): GeneratedAssets => {
-  let patchableShortcutsMap = shortcuts
+): PatchableAssets => {
+  let patchableShortcutsMap =
+    generatedShortcutsMapToPatchableShortcutsMap(shortcuts)
   let patchablePreflights = preflights
   let patchableRules = rules
 

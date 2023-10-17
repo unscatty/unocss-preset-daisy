@@ -1,10 +1,7 @@
 import { StaticRule } from 'unocss'
-import { DynamicShortcutInfo, type Patch } from '../types'
+import { type Patch } from '../types'
 
-export const patchMenuItem: Patch = (
-  { rules, shortcuts, preflights },
-  styleName
-) => {
+export const patchMenuItem: Patch = ({ rules, shortcuts, preflights }, styleName) => {
   if (styleName !== 'styled') {
     return {
       rules,
@@ -28,18 +25,17 @@ export const patchMenuItem: Patch = (
 
     rules.unshift(menuItemTransitionRule)
 
-    const menuItemPatch: DynamicShortcutInfo = {
-      isDynamic: true,
-      normalizedSelector:
-        '.menu_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_.menu_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))',
-      selectorWithNest:
-        '&_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_&_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))',
-      values: ['transition-menu-item'],
-    }
+    const menuItemPatch =
+      'selector-[.menu_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_.menu_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))]:transition-menu-item'
+
+    const newMenuShortcutValues =
+      typeof menuShortcut.values === 'string'
+        ? menuShortcut.values + ' ' + menuItemPatch
+        : [...menuShortcut.values, menuItemPatch]
 
     shortcuts.set('menu', {
-      ...menuShortcut,
-      shortcuts: [...menuShortcut.shortcuts, menuItemPatch],
+      values: newMenuShortcutValues,
+      meta: menuShortcut.meta,
     })
   }
 
