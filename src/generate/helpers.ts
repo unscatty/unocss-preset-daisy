@@ -4,7 +4,6 @@ import postcss from 'postcss'
 // @ts-ignore
 import tailwindNesting from '@tailwindcss/nesting'
 import { parse, type CssInJs } from 'postcss-js'
-import { parse as parseCSSValue } from 'postcss-values-parser'
 import { CSSEntries, RuleMeta, StaticRule as UnoStaticRule } from 'unocss'
 import { GeneratedShortcutsMap } from './types'
 import { normalizeSelector, replaceSelectorWithPlaceholder } from './utils'
