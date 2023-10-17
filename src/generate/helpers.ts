@@ -5,34 +5,46 @@ import postcss from 'postcss'
 import tailwindNesting from '@tailwindcss/nesting'
 import { parse, type CssInJs } from 'postcss-js'
 import { parse as parseCSSValue } from 'postcss-values-parser'
-import { CSSEntries, ShortcutValue, StaticRule as UnoStaticRule } from 'unocss'
+import { CSSEntries, RuleMeta, StaticRule as UnoStaticRule } from 'unocss'
+import { GeneratedShortcutsMap } from './types'
 
 export const mergeMaps = (
-  maps: Map<string, ShortcutValue[]>[],
+  maps: GeneratedShortcutsMap[],
   uniques = false
-) => {
+): GeneratedShortcutsMap => {
   if (maps.length === 0) {
-    return new Map<string, ShortcutValue[]>()
+    return new Map()
   }
 
   const mergedMap = new Map(structuredClone(maps[0]))
 
   for (const map of maps.slice(1)) {
-    for (const [key, value] of map) {
-      if (mergedMap.has(key)) {
-        const exisitingValue = mergedMap.get(key)!
+    for (const [
+      shortcutName,
+      { values: shortcutValues, meta: shortcutMeta },
+    ] of map) {
+      if (mergedMap.has(shortcutName)) {
+        const existingValue = mergedMap.get(shortcutName)!
 
-        mergedMap.set(key, [...exisitingValue, ...value])
+        const newShortcutValues = [...existingValue.values, ...shortcutValues]
+
+        mergedMap.set(shortcutName, {
+          values: newShortcutValues,
+          meta: { ...existingValue.meta, ...shortcutMeta },
+        })
       } else {
-        mergedMap.set(key, value)
+        mergedMap.set(shortcutName, {
+          values: shortcutValues,
+          meta: shortcutMeta,
+        })
       }
     }
   }
 
   if (uniques) {
     // Remove duplicate shortcut values
-    for (const [key, value] of mergedMap) {
-      mergedMap.set(key, [...new Set(value)])
+    for (const [shortcutName, { values, meta }] of mergedMap) {
+      mergedMap.set(shortcutName, { values: [...new Set(values)], meta })
     }
   }
 
@@ -97,15 +109,26 @@ export const getAllClassTokens = (
 }
 
 const mergeIntoMap = (
-  map: Map<string, ShortcutValue[]>,
-  entry: { key: string; value: ShortcutValue[] }
+  map: GeneratedShortcutsMap,
+  entry: { shortcutName: string; shortcutValues: string[]; meta?: RuleMeta }
 ) => {
-  if (map.has(entry.key)) {
-    const existingValue = map.get(entry.key)!
+  const {
+    shortcutValues: newShortcutValues,
+    meta: newMeta,
+    shortcutName,
+  } = entry
 
-    map.set(entry.key, [...existingValue, ...entry.value])
+  if (map.has(shortcutName)) {
+    const existingValue = map.get(shortcutName)!
+
+    const newShortcuts = [...existingValue.values, ...newShortcutValues]
+
+    map.set(shortcutName, {
+      values: newShortcuts,
+      meta: { ...existingValue.meta, ...newMeta },
+    })
   } else {
-    map.set(entry.key, entry.value)
+    map.set(shortcutName, { values: newShortcutValues, meta: newMeta })
   }
 }
 
@@ -122,17 +145,20 @@ const makeid = (length: number) => {
   return result
 }
 
+// TODO: remove vars from preflights
+// TODO: handle keyframes
+// TODO: replace selector with inherit, also replace all ocurrences of shortcut in the selector
 export const generateShortcuts = (
   css: postcss.ChildNode[],
   prefix = ''
 ): {
   rules: UnoStaticRule[]
-  shortcuts: Map<string, ShortcutValue[]>
+  shortcuts: GeneratedShortcutsMap
   toPreflights: (postcss.Rule | postcss.Declaration)[]
 } => {
   // TODO: if prefix is empty, use CSS object approach
 
-  let generatedShortcuts = new Map<string, ShortcutValue[]>()
+  let generatedShortcuts: GeneratedShortcutsMap = new Map()
 
   // Rules generated from raw CSS declarations
   const generatedRules: UnoStaticRule[] = []
@@ -155,7 +181,7 @@ export const generateShortcuts = (
 
     if (node.type === 'rule') {
       const toPreflightVars: postcss.Declaration[] = []
-      const shortcutValues: ShortcutValue[] = []
+      const shortcutValues: string[] = []
 
       let currentGeneratedRule: CSSEntries = []
 
@@ -235,8 +261,8 @@ export const generateShortcuts = (
         const classToken = classTokens[0]!
 
         mergeIntoMap(generatedShortcuts, {
-          key: classToken,
-          value: shortcutValues.map((value) => `${prefix}${value}`),
+          shortcutName: classToken,
+          shortcutValues: shortcutValues.map((value) => `${prefix}${value}`),
         })
 
         for (const node of toPreflightVars) {
@@ -248,8 +274,8 @@ export const generateShortcuts = (
           toPreflights.push(node)
 
           mergeIntoMap(generatedShortcuts, {
-            key: classToken,
-            value: [`${prefix}[${originalProp}:var(${preflightVar})]`],
+            shortcutName: classToken,
+            shortcutValues: [`${prefix}[${originalProp}:var(${preflightVar})]`],
           })
         }
       } else {
@@ -257,8 +283,8 @@ export const generateShortcuts = (
         // Add selector prefix
         for (const classToken of classTokens) {
           mergeIntoMap(generatedShortcuts, {
-            key: classToken,
-            value: shortcutValues.map(
+            shortcutName: classToken,
+            shortcutValues: shortcutValues.map(
               (value) =>
                 `${prefix}selector-[${ruleSelector.replace(
                   /\s+/g,
@@ -278,8 +304,8 @@ export const generateShortcuts = (
             toPreflights.push(clonedNode)
 
             mergeIntoMap(generatedShortcuts, {
-              key: classToken,
-              value: [
+              shortcutName: classToken,
+              shortcutValues: [
                 `${prefix}selector-[${ruleSelector.replace(
                   /\s+/g,
                   '_'

@@ -18,15 +18,10 @@ export const patchCollapseContent: Patch = (
     const collapseContentPrefixToRemove =
       'selector-[.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_.collapse-content]:'
 
-    const valuesArray =
-      typeof collapseContentShortcut.values === 'string'
-        ? collapseContentShortcut.values.split(' ')
-        : collapseContentShortcut.values
+    const valuesArray = collapseContentShortcut.values
 
     const filteredShortcuts = valuesArray.filter(
-      (shortcut) =>
-        typeof shortcut === 'string' &&
-        !shortcut.startsWith(collapseContentPrefixToRemove)
+      (shortcut) => !shortcut.startsWith(collapseContentPrefixToRemove)
     )
 
     shortcuts.set('collapse-content', {

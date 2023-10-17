@@ -1,7 +1,10 @@
 import { StaticRule } from 'unocss'
 import { type Patch } from '../types'
 
-export const patchMenuItem: Patch = ({ rules, shortcuts, preflights }, styleName) => {
+export const patchMenuItem: Patch = (
+  { rules, shortcuts, preflights },
+  styleName
+) => {
   if (styleName !== 'styled') {
     return {
       rules,
@@ -28,14 +31,9 @@ export const patchMenuItem: Patch = ({ rules, shortcuts, preflights }, styleName
     const menuItemPatch =
       'selector-[.menu_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_.menu_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))]:transition-menu-item'
 
-    const newMenuShortcutValues =
-      typeof menuShortcut.values === 'string'
-        ? menuShortcut.values + ' ' + menuItemPatch
-        : [...menuShortcut.values, menuItemPatch]
-
     shortcuts.set('menu', {
-      values: newMenuShortcutValues,
-      meta: menuShortcut.meta,
+      ...menuShortcut,
+      values: [...menuShortcut.values, menuItemPatch],
     })
   }
 
