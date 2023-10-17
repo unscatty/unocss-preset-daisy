@@ -29,7 +29,7 @@ export const patchMenuItem: Patch = (
     rules.unshift(menuItemTransitionRule)
 
     const menuItemPatch =
-      'selector-[.menu_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_.menu_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))]:transition-menu-item'
+      'inherit-[&_:where(li:not(.menu-title)_>_*:not(ul):not(details):not(.menu-title)),_&_:where(li:not(.menu-title)_>_details_>_summary:not(.menu-title))]:transition-menu-item'
 
     shortcuts.set('menu', {
       ...menuShortcut,

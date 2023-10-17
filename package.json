@@ -60,6 +60,7 @@
   "packageManager": "pnpm@8.6.12",
   "dependencies": {
     "@tailwindcss/nesting": "0.0.0-insiders.565cd3e",
+    "@unocss/rule-utils": "^0.56.5",
     "camelcase": "^8.0.0",
     "mkdirp": "^3.0.1",
     "parsel-js": "^1.1.2",

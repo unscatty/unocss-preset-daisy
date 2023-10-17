@@ -8,6 +8,9 @@ dependencies:
   '@tailwindcss/nesting':
     specifier: 0.0.0-insiders.565cd3e
     version: 0.0.0-insiders.565cd3e(postcss@8.4.31)
+  '@unocss/rule-utils':
+    specifier: ^0.56.5
+    version: 0.56.5
   camelcase:
     specifier: ^8.0.0
     version: 8.0.0
@@ -1206,6 +1209,10 @@ packages:
     resolution: {integrity: sha512-9DL+2adfjWWnFWp2QOJTq2OcfKKo++agaXnCX7CzeD8KgfWCBqxs2RDoxP3HrDbTflhDHdbjz23B+vJoVykhZw==}
     dev: true
 
+  /@unocss/core@0.56.5:
+    resolution: {integrity: sha512-fx5VhOjSHn0HdV2D34pEwFMAHJcJQRTCp1xEE4GzxY1irXzaa+m2aYf5PZjmDxehiOC16IH7TO9FOWANXk1E0w==}
+    dev: false
+
   /@unocss/extractor-arbitrary-variants@0.56.4:
     resolution: {integrity: sha512-Q93Bu3wZld+Vj5dqfJYH6phcmjm7fy6mEul64RexLWF00As9WrRzWEXbLVYmmVwUm9e5xcxZO6s98gKq1nTH6Q==}
     dependencies:
@@ -1306,6 +1313,13 @@ packages:
     dependencies:
       '@unocss/core': 0.56.4
     dev: true
+
+  /@unocss/rule-utils@0.56.5:
+    resolution: {integrity: sha512-CXIGHCIC9B8WUl9KbbFMSZHcsIgfmI/+X0bjBv6xrgBVC1EQ2Acq4PYnJIbaRGBRAhl9wYjNL7Zq2UWOdowHAw==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@unocss/core': 0.56.5
+    dev: false
 
   /@unocss/scope@0.56.4:
     resolution: {integrity: sha512-fS8HEWFUeuNhE3fSBwgSfcgC8JS80sYY692uvpwWUN29gFawQDyEmAkGbqDZoBuvfFtKN2IA+evVJ5iED1vtuA==}

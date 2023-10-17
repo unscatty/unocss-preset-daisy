@@ -14,7 +14,7 @@ export const patchOutlined: Patch = (
 
   for (const [shorcutName, data] of shortcuts) {
     if (shorcutName.endsWith('-outline')) {
-      data.meta = { layer: 'daisy-4-components' }
+      data.meta = { layer: 'daisy-4-priority-components' }
     }
   }
 

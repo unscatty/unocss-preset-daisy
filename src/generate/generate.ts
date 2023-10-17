@@ -7,7 +7,11 @@ import unstyledRtl from './daisy-untailwind/unstyled.rtl'
 import utilities from './daisy-untailwind/utilities'
 import utilitiesStyled from './daisy-untailwind/utilities-styled'
 import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
-import { generateShortcutsRulesAndPreflights, replacePrefix } from './helpers'
+import {
+  generateShortcutsRulesAndPreflights,
+  replacePrefix,
+  replaceSlash,
+} from './helpers'
 import { applyPatches, patches } from './patch'
 
 const styleFiles = [
@@ -44,7 +48,7 @@ for (const styleFile of styleFiles) {
     {
       rules: patchedRules,
       shortcuts: [...patchedShortcuts.entries()],
-      preflights: patchablePreflights.toString(),
+      preflights: replaceSlash(patchablePreflights.toString()),
     },
     // eslint-disable-next-line unicorn/no-null
     null,

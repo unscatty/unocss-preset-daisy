@@ -16,7 +16,7 @@ export const patchCollapseContent: Patch = (
 
   if (collapseContentShortcut) {
     const collapseContentPrefixToRemove =
-      'selector-[.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_.collapse-content]:'
+      'inherit-[.collapse-title,_.collapse_>_input[type="checkbox"],_.collapse_>_input[type="radio"],_&]:'
 
     const valuesArray = collapseContentShortcut.values
 
@@ -26,7 +26,7 @@ export const patchCollapseContent: Patch = (
 
     shortcuts.set('collapse-content', {
       values: filteredShortcuts,
-      meta: { layer: 'daisy-4-components' },
+      meta: { layer: 'daisy-4-priority-components' },
     })
   }
 

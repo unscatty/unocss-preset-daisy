@@ -8,6 +8,8 @@ import colors from 'daisyui/src/theming/index'
 import themes from 'daisyui/src/theming/themes'
 import { StaticRule, type Preflight, type Preset } from 'unocss'
 
+import { variantInherit, variantScoped } from './generate/variants'
+
 import { mergeMaps } from './generate/helpers'
 import { GeneratedShortcutsMap } from './generate/types'
 import { generatedShortcutsMapToStaticShortcuts } from './generate/utils'
@@ -56,8 +58,7 @@ const process = (object: CssInJs) =>
 const replaceSpace = (css: string) =>
   // HSL
   // 123 4% 5% -> 123, 4%, 5%
-  // eslint-disable-next-line unicorn/better-regex
-  css.replace(/([\d.]+) ([\d.%]+) ([\d.%]+)/g, '$1, $2, $3')
+  css.replace(/([\d.]+) ([\d%.]+) ([\d%.]+)/g, '$1, $2, $3')
 
 const defaultOptions = {
   styled: true,
@@ -199,5 +200,6 @@ export const presetDaisy = (
     },
     rules,
     shortcuts,
+    variants: [variantInherit, variantScoped],
   }
 }
