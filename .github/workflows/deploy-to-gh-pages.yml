@@ -24,7 +24,7 @@ jobs:
           run_install: true
 
       - name: Install deps
-        run: pnpm init
+        run: pnpm run deps
 
       - name: Create env file
         run: |

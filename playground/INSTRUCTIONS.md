@@ -9,7 +9,7 @@ git clone https://github.com/unpreset/unocss-preset-theme.git
 ## Install dependencies
 
 ```sh
-pnpm run init # Will install dependencies and playground dependencies
+pnpm run deps # Will install dependencies and playground dependencies
 ```
 
 ## Build preset (generates shorcuts and rules from daisyui)

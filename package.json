@@ -22,7 +22,7 @@
     "dist"
   ],
   "scripts": {
-    "init": "ni && cd playground && ni",
+    "deps": "ni && cd playground && ni",
     "build:preset": "nr generate:compile && nr generate && unbuild --minify",
     "build:demo": "cd playground && nr build",
     "build": "nr build:preset && nr build:demo",
