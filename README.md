@@ -141,7 +141,7 @@ You can still use attributify mode for other utility classes outside of daisy's 
 As a rule of thumb, if using a daisy component, always use `class` selectors.
 
 ### Uno's variant group transformer
-Same as [Attributify](#atributify-mode)
+Same as [Attributify](#attributify-mode)
 
 ### Z-positioning
 Some components may appear on top or behind other elements, this is due to the way this preset generates shortcuts and how Uno sorts and applies the CSS code.
