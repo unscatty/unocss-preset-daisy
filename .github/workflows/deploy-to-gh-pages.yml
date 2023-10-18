@@ -24,14 +24,14 @@ jobs:
           run_install: true
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm init
 
       - name: Create env file
         run: |
           echo "${{ secrets.DEPLOY_GH_PAGES_ENV }}" > playground/.env.gh-pages.local
 
       - name: Build static site
-        run: cd playground/ && pnpm run build --mode gh-pages
+        run: pnpm run build --mode gh-pages
 
       - name: Deploy to Github pages
         uses: crazy-max/ghaction-github-pages@v3
