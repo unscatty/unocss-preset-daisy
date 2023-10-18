@@ -1,14 +1,17 @@
 # unocss-preset-daisy
 
+> Yet another daisyUI preset for UnoCSS
+
 Fully (i think so) compatible [UnoCSS](https://github.com/unocss/unocss) preset for [daisyUI](https://github.com/saadeghi/daisyui)
 
-Variants (hover, focus, breakpoints: sm, md, etc.) supported.
+Variants (`hover`, `focus`, breakpoints: `sm`, `md`, etc.) supported.
 
 This is a rework of kidonng's [unocss-preset-daisy](https://github.com/kidonng/unocss-preset-daisy) to make it work with UnoCSS variants, kudos to him for the original work.
 
 [Checkout the demo!](https://unscatty.github.io/unocss-preset-daisy/)
 
 ## :warning: :warning: :warning: Warning :warning: :warning: :warning:
+
 This preset makes heavy usage of shortcuts and rules, so, when using the UnoCSS VSCode extension, editor may become laggy. I recommend disabling the extension's color preview to help with that.
 
 ```js
@@ -89,6 +92,64 @@ export default defineNuxtConfig({
 })
 ```
 
+### Things to consider
+
+#### Attributify mode
+
+DaisyUI is developed primarily for TailwindCSS, so, when using daisy's components and [Uno's attributify mode](https://unocss.dev/presets/attributify#attributify-mode), remember to always place components and modifiers inside a `class` attribute, otherwise, they may not work.
+
+Complex components (like drawer, modal, etc.) that have nested child components, will not work when using attributify mode, as the child components expect to be inside a `class` attribute.
+
+_"Simple"_ components (like buttons, badges, etc.) may work when using attributify mode, however, some modifiers (`btn-active`, `btn-outline`, `glass`, etc.) are still hardcoded as `class` selectors, so, they will possibly not work.
+
+Trying to adapt this preset to use attributify mode would be almost impossible as there is no way to know all possible combinations of components and modifiers.
+
+You can still use attributify mode for other utility classes outside of daisy's components.
+
+```html
+<!-- This will work -->
+<!-- Note you can still use attributify mode for utilities outside daisy -->
+<button class="btn btn-primary" hover="normal-case">Primary</button>
+
+<!-- This will also work -->
+<button btn btn-primary hover="normal-case">Primary</button>
+
+<!-- This won't work as expected (btn-active is hardcoded as class selector) -->
+<button btn btn-active btn-accent>Accent</button>
+
+<!-- This will simply not work -->
+<h3 class="font-bold my-1 text-xl">Drawer responsive (attributify)</h3>
+<div drawer lg:drawer-open>
+  <input id="my-drawer" type="checkbox" drawer-toggle />
+  <div drawer-content class="flex flex-col items-center justify-center">
+    <!-- Page content here -->
+    <label for="my-drawer" btn btn-primary btn-block drawer-button lg:hidden>
+      Open drawer
+    </label>
+  </div>
+  <div drawer-side>
+    <label for="my-drawer" drawer-overlay></label>
+    <ul menu class="p-4 w-80 h-full bg-base-200 text-base-content">
+      <!-- Sidebar content here -->
+      <li><a>Sidebar Item 1</a></li>
+      <li><a>Sidebar Item 2</a></li>
+    </ul>
+  </div>
+</div>
+```
+
+As a rule of thumb, if using a daisy component, always use `class` selectors.
+
+### Uno's variant group transformer
+Same as [Attributify](#atributify-mode)
+
+### Z-positioning
+Some components may appear on top or behind other elements, this is due to the way this preset generates shortcuts and how Uno sorts and applies the CSS code.
+
+This can be easily fixed using the `z-*` classes to set the z-index of the element.
+
+
+
 ## Config
 
 This preset accepts [the same config as daisyUI](https://daisyui.com/docs/config/) (except for `logs` and `prefix`).
@@ -106,24 +167,32 @@ This preset accepts [the same config as daisyUI](https://daisyui.com/docs/config
 ```
 
 ## Caveats
+
 ### Unused classes, variable names and keyframes
-When generating the shortcuts and rules from daisyUI, some CSS code (preflights) get generated. Some of them may not be used in your project, but they will still be generated and included in the final CSS. This is due to the way this preset generates the rules and shortcuts, I still need to figure out a way to fix this, but for now, it's not a big deal, as the unused code is not that big (mostly keyframes definitions, variables that hold data-url svg elements and themes configuration).
+
+When generating the shortcuts and rules from daisyUI, some CSS code (animation _@keyframes_) get generated. Some of them may not be used in your project, but they will still be generated and included in the final CSS. This is due to the way this preset generates the rules and shortcuts, I still need to figure out a way to fix this, but for now, it's not a big deal, as the unused code is not that big (mostly keyframes definitions, variables that hold data-url svg elements and themes configuration).
 
 Other than that, code for components is generated on demand, as expected.
 
 If you are concerned about this, you can use something like [PurgeCSS](https://purgecss.com/) to remove the unused code from the final CSS. If you use Vite to build your project, you can use the [Vite plugin](https://github.com/jowast/vite-plugin-purgecss) for PurgeCSS.
 
 ## TODO
+
 - [ ] Make demo less ugly. Organize components in their own pages, add more components, etc.
 - [x] Fix unused code generation (move keyframes to preset config insted of preflights, convert variables to CSS object definition). Still need to move keyframes to config.
 - [ ] Make it possible to extend components using shortcuts, scoped by theme. Potentially by using the [unocss-preset-theme](https://github.com/unpreset/unocss-preset-theme). So, defining a new theme would be way easier.
 - [ ] Rename functions to make it more clear what they do.
 - [ ] Add tests
 - [ ] Remove static daisyUI component files
+- [ ] Remove unused playground dependencies (move playground dependencies to its own package.json)
+- [ ] Add `prefix` option
 
 ## Credits
+
 - [daisyUI](https://github.com/saadeghi/daisyui)
 - [UnoCSS](https://github.com/unocss/unocss)
 - kidonng's [unocss-preset-daisy](https://github.com/kidonng/unocss-preset-daisy) - inspiration and base for this preset
+
 ## Authors
+
 - Carlos Aguilera ([@unscatty](https://github.com/unscatty)) - Creator, maintainer
