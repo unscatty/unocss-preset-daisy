@@ -9,6 +9,7 @@ types
 *.conf
 *.env*
 *.json
+!package.json
 src/generate/*.js
 src/generate/patches/*.js
 src/generate/dist
