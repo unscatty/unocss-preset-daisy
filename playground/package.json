@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --outDir ../demo --minify --manifest",
+    "build": "vite build --outDir ../demo --minify --manifest --emptyOutDir",
     "preview": "vite preview --outDir ../demo",
     "lint": "eslint --ext .ts,.js,.vue ."
   },
