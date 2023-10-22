@@ -4,22 +4,22 @@ import { parse as parseCSSValues } from 'postcss-values-parser'
 import { RuleMeta, StaticShortcut } from 'unocss'
 import { GeneratedShortcutsMap, GeneratedShortcutsEntries } from './types'
 
-const colorNamesVarReplacements = Object.fromEntries(
+export const colorNamesVarReplacements = Object.fromEntries(
   Object.entries(invertObject(colorNames)).map(([key, value]) => [
     key,
-    prefixVarName(value, '--daisy-colors'),
+    prefixVarName(value, '--daisy-colors-'),
   ])
 )
 
-const defaultVarsLookup = Object.fromEntries(
+export const defaultVarsLookup = Object.fromEntries(
   Object.entries(themeDefaults.variables).map(([varName]) => [
     varName,
-    prefixVarName(varName, '--daisy-vars'),
+    prefixVarName(varName, '--daisy-vars-'),
   ])
 )
 
 export const varsLookup = {
-  // ...defaultVarsLookup,
+  ...defaultVarsLookup,
   ...colorNamesVarReplacements,
 }
 
@@ -159,3 +159,8 @@ export const replaceSimpleVar = (
     return `var(${replacedVarName})`
   })
 }
+
+export const replaceSpace = (css: string) =>
+  // HSL
+  // 123 4% 5% -> 123, 4%, 5%
+  css.replace(/([\d.]+) ([\d%.]+) ([\d%.]+)/g, '$1, $2, $3')

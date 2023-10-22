@@ -1,22 +1,15 @@
 // <reference path="./data-json.d.ts" />
-import postcss from 'postcss'
-import { parse, type CssInJs } from 'postcss-js'
-
-import camelCase from 'camelcase'
-import colorFunctions from 'daisyui/src/theming/functions'
-import colors from 'daisyui/src/theming/index'
-import themes from 'daisyui/src/theming/themes'
 import { StaticRule, type Preflight, type Preset } from 'unocss'
-
+import { presetTheme } from 'unocss-preset-theme'
+import { defaultThemes } from './default-themes'
+import { mergeMaps } from './generate/helpers'
 import { variantInherit, variantScoped } from './generate/variants'
 
-import { mergeMaps } from './generate/helpers'
-import { GeneratedShortcutsEntries, GeneratedShortcutsMap } from './generate/types'
 import {
-  generatedShortcutsMapToStaticShortcuts,
-  replaceSimpleVar,
-  varsLookup,
-} from './generate/utils'
+  GeneratedShortcutsEntries,
+  GeneratedShortcutsMap,
+} from './generate/types'
+import { generatedShortcutsMapToStaticShortcuts } from './generate/utils'
 import { preflights as basePreflights } from './generated/base.json'
 import {
   preflights as styledPreflights,
@@ -53,15 +46,9 @@ import {
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
 } from './generated/utilities.json'
-
-const processor = postcss()
-const process = (object: CssInJs) =>
-  processor.process(object, { parser: parse })
-
-const replaceSpace = (css: string) =>
-  // HSL
-  // 123 4% 5% -> 123, 4%, 5%
-  css.replace(/([\d.]+) ([\d%.]+) ([\d%.]+)/g, '$1, $2, $3')
+import { getSelectors } from './utils/preset'
+import { kebabCase } from './utils/case'
+import { DaisyExtendTheme } from './types'
 
 const defaultOptions = {
   styled: true,
@@ -74,7 +61,7 @@ const defaultOptions = {
   darkTheme: 'dark',
 }
 
-export const presetDaisy = (
+export const presetDaisy = <Theme extends object = object>(
   options: Partial<typeof defaultOptions> = {}
 ): Preset => {
   options = { ...defaultOptions, ...options }
@@ -151,67 +138,54 @@ export const presetDaisy = (
     })
   }
 
-  colorFunctions.injectThemes(
-    (theme) => {
-      preflights.push({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        getCSS: () => {
-          const rootNode = process(theme).root
-
-          rootNode.walkDecls((decl) => {
-            decl.prop = varsLookup[decl.prop] ?? decl.prop
-          })
-
-          return replaceSpace(rootNode.toString())
-        },
-        layer: 'daisy-2-themes',
-      })
-    },
-    (key) => {
-      if (key === 'daisyui.themes') {
-        return options.themes
-      }
-
-      if (key === 'daisyui.darkTheme') {
-        return options.darkTheme
-      }
-    },
-    themes,
-    'hsl'
-  )
-
   const shortcuts = generatedShortcutsMapToStaticShortcuts(styles, {
     uniques: true,
     defaultMeta: { layer: 'daisy-3-components' },
   })
 
+  const selectors = getSelectors(Object.keys(defaultThemes))
+
+  const variablesPreflights: Preflight[] = []
+
+  for (const [themeName, theme] of Object.entries(defaultThemes)) {
+    if (theme.variables) {
+      variablesPreflights.push({
+        getCSS: () => {
+          // const rootNode =C
+
+          const selector = selectors[themeName] ?? `[data-theme="${themeName}"]`
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const declarations = Object.entries(theme.variables!).map(
+            ([key, value]) => {
+              return `${kebabCase(key)}:${value}`
+            }
+          )
+
+          return `${selector} { ${declarations.join(';')} }`
+        },
+        layer: 'daisy-1-base',
+      })
+    }
+  }
+
+  preflights.push(...variablesPreflights)
+
+  const presetThemeConfig = presetTheme({
+    theme: defaultThemes,
+    selectors,
+    prefix: '--daisy',
+  })
+
+  // const presetThemePreflights = presetThemeConfig.preflights
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  presetThemeConfig.preflights![0].layer = 'daisy-1-base'
+
   return {
     name: 'unocss-preset-daisy',
     preflights,
-    theme: {
-      colors: {
-        ...Object.fromEntries(
-          Object.entries(colors)
-            .filter(
-              ([color]) =>
-                // Already in @unocss/preset-mini
-                // https://github.com/unocss/unocss/blob/0f7efcba592e71d81fbb295332b27e6894a0b4fa/packages/preset-mini/src/_theme/colors.ts#L11-L12
-                !['transparent', 'current'].includes(color) &&
-                // Added below
-                !color.startsWith('base')
-            )
-            .map(([color, value]) => [
-              camelCase(color),
-              replaceSimpleVar(value, varsLookup),
-            ])
-        ),
-        base: Object.fromEntries(
-          Object.entries(colors)
-            .filter(([color]) => color.startsWith('base'))
-            .map(([color, value]) => [color.replace('base-', ''), replaceSimpleVar(value, varsLookup)])
-        ),
-      },
-    },
+    presets: [presetThemeConfig],
     rules,
     shortcuts,
     variants: [variantInherit, variantScoped],
