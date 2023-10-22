@@ -9,10 +9,11 @@ import utilitiesStyled from './daisy-untailwind/utilities-styled'
 import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
 import {
   generateShortcutsRulesAndPreflights,
-  replacePrefix,
+  replaceTwPrefix,
   replaceSlash,
 } from './helpers'
 import { applyPatches, patches } from './patch'
+import { varsLookup } from './utils'
 
 const styleFiles = [
   { name: 'styled', css: styled, filename: 'styled.json' },
@@ -35,7 +36,8 @@ const styleFiles = [
 
 for (const styleFile of styleFiles) {
   const { rules, shortcuts, preflights } = generateShortcutsRulesAndPreflights(
-    styleFile.css
+    styleFile.css,
+    varsLookup
   )
 
   const {
@@ -48,6 +50,7 @@ for (const styleFile of styleFiles) {
     {
       rules: patchedRules,
       shortcuts: [...patchedShortcuts.entries()],
+      // TODO: parse preflights decl to find 'hsl' functions and replace '/' with ','
       preflights: replaceSlash(patchablePreflights.toString()),
     },
     // eslint-disable-next-line unicorn/no-null
@@ -59,7 +62,7 @@ for (const styleFile of styleFiles) {
 
   writeFile(
     `./src/generated/${styleFile.filename}`,
-    replacePrefix(jsonContent),
+    replaceTwPrefix(jsonContent),
     {
       flag: 'w',
     },

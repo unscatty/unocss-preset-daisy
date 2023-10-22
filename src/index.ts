@@ -11,8 +11,12 @@ import { StaticRule, type Preflight, type Preset } from 'unocss'
 import { variantInherit, variantScoped } from './generate/variants'
 
 import { mergeMaps } from './generate/helpers'
-import { GeneratedShortcutsMap } from './generate/types'
-import { generatedShortcutsMapToStaticShortcuts } from './generate/utils'
+import { GeneratedShortcutsEntries, GeneratedShortcutsMap } from './generate/types'
+import {
+  generatedShortcutsMapToStaticShortcuts,
+  replaceSimpleVar,
+  varsLookup,
+} from './generate/utils'
 import { preflights as basePreflights } from './generated/base.json'
 import {
   preflights as styledPreflights,
@@ -49,7 +53,6 @@ import {
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
 } from './generated/utilities.json'
-// import { writeFileSync } from 'fs'
 
 const processor = postcss()
 const process = (object: CssInJs) =>
@@ -78,18 +81,18 @@ export const presetDaisy = (
 
   const generatedPreflights: string[] = []
 
-  let styles: GeneratedShortcutsMap
+  let styles: GeneratedShortcutsEntries | GeneratedShortcutsMap = new Map()
   let rules: StaticRule[] = []
 
   if (options.styled) {
     if (options.rtl) {
-      styles = styledRtlShortcuts as unknown as GeneratedShortcutsMap
+      styles = styledRtlShortcuts as GeneratedShortcutsEntries
 
       generatedPreflights.push(styledRtlPreflights)
 
       rules = styledRtlRules as StaticRule[]
     } else {
-      styles = styledShortcuts as unknown as GeneratedShortcutsMap
+      styles = styledShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(styledPreflights)
 
       rules = styledRules as StaticRule[]
@@ -97,12 +100,12 @@ export const presetDaisy = (
   } else {
     // eslint-disable-next-line no-lonely-if
     if (options.rtl) {
-      styles = unstyledRtlShortcuts as unknown as GeneratedShortcutsMap
+      styles = unstyledRtlShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(unstyledRtlPreflights)
 
       rules = unstyledRtlRules as StaticRule[]
     } else {
-      styles = unstyledShortcuts as unknown as GeneratedShortcutsMap
+      styles = unstyledShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(unstyledPreflights)
 
       rules = unstyledRules as StaticRule[]
@@ -114,9 +117,9 @@ export const presetDaisy = (
     styles = mergeMaps(
       [
         styles,
-        utilitiesShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesUnstyledShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesStyledShortcuts as unknown as GeneratedShortcutsMap,
+        utilitiesShortcuts as GeneratedShortcutsEntries,
+        utilitiesUnstyledShortcuts as GeneratedShortcutsEntries,
+        utilitiesStyledShortcuts as GeneratedShortcutsEntries,
       ],
       true
     )
@@ -129,9 +132,9 @@ export const presetDaisy = (
     ]
 
     generatedPreflights.push(
-      utilitiesPreflights as string,
-      utilitiesUnstyledPreflights as string,
-      utilitiesStyledPreflights as string
+      utilitiesPreflights,
+      utilitiesUnstyledPreflights,
+      utilitiesStyledPreflights
     )
   }
 
@@ -143,7 +146,7 @@ export const presetDaisy = (
 
   if (options.base) {
     preflights.unshift({
-      getCSS: () => basePreflights as string,
+      getCSS: () => basePreflights,
       layer: 'daisy-1-base',
     })
   }
@@ -152,7 +155,15 @@ export const presetDaisy = (
     (theme) => {
       preflights.push({
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        getCSS: () => replaceSpace(process(theme).css),
+        getCSS: () => {
+          const rootNode = process(theme).root
+
+          rootNode.walkDecls((decl) => {
+            decl.prop = varsLookup[decl.prop] ?? decl.prop
+          })
+
+          return replaceSpace(rootNode.toString())
+        },
         layer: 'daisy-2-themes',
       })
     },
@@ -189,12 +200,15 @@ export const presetDaisy = (
                 // Added below
                 !color.startsWith('base')
             )
-            .map(([color, value]) => [camelCase(color), value])
+            .map(([color, value]) => [
+              camelCase(color),
+              replaceSimpleVar(value, varsLookup),
+            ])
         ),
         base: Object.fromEntries(
           Object.entries(colors)
             .filter(([color]) => color.startsWith('base'))
-            .map(([color, value]) => [color.replace('base-', ''), value])
+            .map(([color, value]) => [color.replace('base-', ''), replaceSimpleVar(value, varsLookup)])
         ),
       },
     },

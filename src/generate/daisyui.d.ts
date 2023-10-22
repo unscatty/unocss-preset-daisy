@@ -65,8 +65,8 @@ declare module 'daisyui/src/theming/themes' {
   export default themes
 }
 
-declare module 'daisyui/src/theming/colorNames' {
-  const colorNames: Record<string, Record<string, string>>
+declare module 'daisyui/src/theming/colorNames.js' {
+  const colorNames: Record<string, string>
   export default colorNames
 }
 
@@ -84,4 +84,13 @@ declare module 'daisyui/src/theming/functions' {
     input: Record<string, string>,
     colorFunction?: 'hsl' | 'lch'
   ): Record<string, string>
+}
+
+declare module 'daisyui/src/theming/themeDefaults.js' {
+  const themeDefaults: {
+    themeOrder: string[]
+    variables: Record<string, string>
+  }
+
+  export default themeDefaults
 }

@@ -5,11 +5,15 @@ import postcss from 'postcss'
 import tailwindNesting from '@tailwindcss/nesting'
 import { parse, type CssInJs } from 'postcss-js'
 import { CSSEntries, RuleMeta, StaticRule as UnoStaticRule } from 'unocss'
-import { GeneratedShortcutsMap } from './types'
-import { normalizeSelector, replaceSelectorWithPlaceholder } from './utils'
+import { GeneratedShortcutsIterable, GeneratedShortcutsMap } from './types'
+import {
+  normalizeSelector,
+  replaceSelectorWithPlaceholder,
+  replaceVariables,
+} from './utils'
 
 export const mergeMaps = (
-  maps: GeneratedShortcutsMap[],
+  maps: GeneratedShortcutsIterable[],
   uniques = false
 ): GeneratedShortcutsMap => {
   if (maps.length === 0) {
@@ -171,7 +175,8 @@ const makeid = (length: number) => {
 // TODO: check for ghost shortcuts (glass and btn-glass)
 export const generateShortcuts = (
   css: postcss.ChildNode[],
-  prefix = ''
+  variablesLookup: Record<string, string> = {},
+  previousVariant = ''
 ): {
   rules: UnoStaticRule[]
   shortcuts: GeneratedShortcutsMap
@@ -189,6 +194,7 @@ export const generateShortcuts = (
       const { shortcuts: nestedShortcuts, toPreflights: nestedPreflights } =
         generateShortcuts(
           node.nodes,
+          variablesLookup,
           `media-[${normalizeSelector(node.params)}]:`
         )
 
@@ -234,7 +240,11 @@ export const generateShortcuts = (
 
         if (child.type === 'decl') {
           // Add CSS declaration to the generated rule CSS declarations
-          currentRuleEntries.push([child.prop, child.value])
+          currentRuleEntries.push([
+            // Replace variables
+            variablesLookup[child.prop] ?? child.prop,
+            replaceVariables(child.value, variablesLookup),
+          ])
         }
       }
 
@@ -259,7 +269,9 @@ export const generateShortcuts = (
 
         mergeIntoMap(generatedShortcuts, {
           shortcutName: classToken,
-          shortcutValues: shortcutValues.map((value) => `${prefix}${value}`),
+          shortcutValues: shortcutValues.map(
+            (value) => `${previousVariant}${value}`
+          ),
         })
       } else {
         // For every class token, add it to the shortcuts map
@@ -276,7 +288,7 @@ export const generateShortcuts = (
             shortcutValues: shortcutValues.map(
               (value) =>
                 // Use inherit variant
-                `${prefix}inherit-[${normalizeSelector(
+                `${previousVariant}inherit-[${normalizeSelector(
                   selectorWithPlaceholder
                 )}]:${value}`
             ),
@@ -293,17 +305,22 @@ export const generateShortcuts = (
   }
 }
 
-export const replacePrefix = (css: string) => css.replace(/--tw-/g, '--un-')
+export const replaceTwPrefix = (css: string) => css.replace(/--tw-/g, '--un-')
+// TODO: parse decl to find 'hsl' functions and replace '/' with ','
 // UnoCSS uses comma syntax
 // var(--foo) / 0.1 -> var(--foo), 0.1
 export const replaceSlash = (css: string) => css.replaceAll(') / ', '), ')
 
-export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
+export const generateShortcutsRulesAndPreflights = (
+  css: CssInJs,
+  variablesLookup: Record<string, string> = {}
+) => {
   const { updatedNodes: nodesWithoutKeyframes, keyframes } =
     extractAndRemoveKeyframes(css)
 
   const { rules, shortcuts, toPreflights } = generateShortcuts(
-    nodesWithoutKeyframes.nodes as postcss.ChildNode[]
+    nodesWithoutKeyframes.nodes as postcss.ChildNode[],
+    variablesLookup
   )
 
   const preflightsRules: postcss.ChildNode[] = []
@@ -327,6 +344,11 @@ export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
   if (preflightsRootNode.nodes.length > 0) {
     preflights.prepend(preflightsRootNode)
   }
+
+  // Replace variables in preflights
+  preflights.walkDecls((decl) => {
+    decl.value = replaceVariables(decl.value, variablesLookup)
+  })
 
   return { rules, shortcuts, preflights } as const
 }

@@ -64,7 +64,8 @@
     "camelcase": "^8.0.0",
     "parsel-js": "^1.1.2",
     "postcss": "^8.4.31",
-    "postcss-js": "^4.0.1"
+    "postcss-js": "^4.0.1",
+    "postcss-values-parser": "^6.0.2"
   },
   "peerDependencies": {
     "daisyui": "^3.8.3",

@@ -1,11 +1,22 @@
 import postcss from 'postcss'
 import { RuleMeta, StaticRule } from 'unocss'
 
+export type GeneratedShortcutsName = string
+export type GeneratedShortcutsValue = { values: string[]; meta?: RuleMeta }
+
 export type GeneratedShortcutsMap = Map<
-  string,
-  { values: string[]; meta?: RuleMeta }
+  GeneratedShortcutsName,
+  GeneratedShortcutsValue
 >
 
+export type GeneratedShortcutsEntries = [
+  GeneratedShortcutsName,
+  GeneratedShortcutsValue,
+][]
+
+export type GeneratedShortcutsIterable = Iterable<
+  [GeneratedShortcutsName, GeneratedShortcutsValue]
+>
 export interface GeneratedAssets {
   rules: StaticRule[]
   shortcuts: GeneratedShortcutsMap

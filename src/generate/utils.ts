@@ -1,8 +1,30 @@
+import colorNames from 'daisyui/src/theming/colorNames.js'
+import themeDefaults from 'daisyui/src/theming/themeDefaults.js'
+import { parse as parseCSSValues } from 'postcss-values-parser'
 import { RuleMeta, StaticShortcut } from 'unocss'
-import { GeneratedShortcutsMap } from './types'
+import { GeneratedShortcutsMap, GeneratedShortcutsEntries } from './types'
+
+const colorNamesVarReplacements = Object.fromEntries(
+  Object.entries(invertObject(colorNames)).map(([key, value]) => [
+    key,
+    prefixVarName(value, '--daisy-colors'),
+  ])
+)
+
+const defaultVarsLookup = Object.fromEntries(
+  Object.entries(themeDefaults.variables).map(([varName]) => [
+    varName,
+    prefixVarName(varName, '--daisy-vars'),
+  ])
+)
+
+export const varsLookup = {
+  // ...defaultVarsLookup,
+  ...colorNamesVarReplacements,
+}
 
 export const generatedShortcutsMapToStaticShortcuts = (
-  shortcutsMap: GeneratedShortcutsMap,
+  shortcutsMap: GeneratedShortcutsMap | GeneratedShortcutsEntries,
   options?: {
     defaultMeta?: RuleMeta
     uniques?: boolean
@@ -78,4 +100,62 @@ export const replaceSelectorWithPlaceholder = (
 
 export const normalizeSelector = (selector: string) => {
   return selector.replace(/\s+/g, '_')
+}
+
+export function invertObject<T extends Record<string, string>>(obj: T) {
+  const newObj = {} as Record<string, string>
+
+  for (const [key, value] of Object.entries(obj)) {
+    newObj[value] = key
+  }
+
+  return newObj
+}
+
+export const replaceVariables = (
+  rawCSS: string,
+  variablesLookup: Record<string, string>
+) => {
+  try {
+    const root = parseCSSValues(rawCSS)
+
+    root.walkFuncs((node) => {
+      if (node.isVar) {
+        const variable = node.nodes[0]
+
+        if (
+          variable.type === 'word' &&
+          variable.isVariable &&
+          variable.value in variablesLookup
+        ) {
+          variable.value = variablesLookup[variable.value]
+        }
+      }
+    })
+
+    return root.toString()
+  } catch {
+    return rawCSS
+  }
+}
+
+export function prefixVarName(varName: string, prefix: string) {
+  if (varName.startsWith('--')) {
+    return `${prefix}${varName.slice(2)}`
+  }
+
+  return `${prefix}${varName}`
+}
+
+export const replaceSimpleVar = (
+  rawCSS: string,
+  varsLookup: Record<string, string> = {}
+) => {
+  const varRegex = /var\(([\w-]+)\)/g
+
+  return rawCSS.replace(varRegex, (_, varName) => {
+    const replacedVarName = varsLookup[varName] ?? varName
+
+    return `var(${replacedVarName})`
+  })
 }
