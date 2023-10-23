@@ -1,19 +1,58 @@
 import type { UserShortcuts } from 'unocss'
 
-export interface Colors {
+export type DaisyDefaultThemeNames =
+  | 'light'
+  | 'dark'
+  | 'cupcake'
+  | 'bumblebee'
+  | 'emerald'
+  | 'corporate'
+  | 'synthwave'
+  | 'retro'
+  | 'cyberpunk'
+  | 'valentine'
+  | 'halloween'
+  | 'garden'
+  | 'forest'
+  | 'aqua'
+  | 'lofi'
+  | 'pastel'
+  | 'fantasy'
+  | 'wireframe'
+  | 'black'
+  | 'luxury'
+  | 'dracula'
+  | 'cmyk'
+  | 'autumn'
+  | 'business'
+  | 'acid'
+  | 'lemonade'
+  | 'night'
+  | 'coffee'
+  | 'winter'
+
+export type DaisyGeneratedTheme<Theme extends object = object> =
+  Partial<Theme> &
+    Partial<{
+      colorScheme: string
+      colors: DaisyColors
+      variables: Record<string, string>
+      fontFamily: Record<string, string>
+    }>
+
+export interface DaisyColors {
   [key: string]:
-    | (Colors & {
+    | (DaisyColors & {
         DEFAULT?: string
       })
     | string
 }
 
-export type DaisyExtendTheme<Theme extends object = object> = Theme &
+export type DaisyExtendTheme<Theme extends object = object> = Partial<Theme> &
+  DaisyGeneratedTheme<Theme> &
   Partial<{
-    inherit: string
-    variables: Record<string, string>
+    inherit: DaisyDefaultThemeNames
     shortcuts: UserShortcuts
-    colors: Colors
   }>
 
 export type DaisyPresetOptions<Theme extends object = object> = Partial<{

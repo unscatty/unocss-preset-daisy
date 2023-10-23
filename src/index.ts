@@ -1,7 +1,7 @@
 // <reference path="./data-json.d.ts" />
 import { StaticRule, type Preflight, type Preset } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
-import { defaultThemes } from './default-themes'
+import { defaultDaisyThemes, getDefaultThemes } from './default-themes'
 import { mergeMaps } from './generate/helpers'
 import { variantInherit, variantScoped } from './generate/variants'
 
@@ -46,15 +46,16 @@ import {
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
 } from './generated/utilities.json'
-import { getSelectors } from './utils/preset'
-import { kebabCase } from './utils/case'
-import { DaisyExtendTheme } from './types'
+import { DaisyExtendTheme, DaisyPresetOptions } from './types'
+import {
+  extractVarsPreflights,
+  getSelectors,
+  processThemes,
+} from './utils/preset'
 
-const defaultOptions = {
+const defaultOptions: DaisyPresetOptions = {
   styled: true,
-  themes: false as
-    | boolean
-    | Array<string | Record<string, Record<string, string>>>,
+  themes: getDefaultThemes(['light', 'dark']),
   base: true,
   utils: true,
   rtl: false,
@@ -62,9 +63,15 @@ const defaultOptions = {
 }
 
 export const presetDaisy = <Theme extends object = object>(
-  options: Partial<typeof defaultOptions> = {}
-): Preset => {
+  options: DaisyPresetOptions<Theme> = {}
+): Preset<DaisyExtendTheme<Theme>> => {
   options = { ...defaultOptions, ...options }
+
+  let themes: Record<string, DaisyExtendTheme<Theme>> = {}
+
+  if (options.themes) {
+    themes = options.themes === true ? defaultDaisyThemes : options.themes
+  }
 
   const generatedPreflights: string[] = []
 
@@ -125,16 +132,18 @@ export const presetDaisy = <Theme extends object = object>(
     )
   }
 
+  // TODO: Move keyframes to theme config
   const preflights: Preflight[] = [
     {
       getCSS: () => generatedPreflights.join('\n'),
+      layer: 'daisy-1-4-keyframes',
     },
   ]
 
   if (options.base) {
     preflights.unshift({
       getCSS: () => basePreflights,
-      layer: 'daisy-1-base',
+      layer: 'daisy-1-1-base',
     })
   }
 
@@ -143,44 +152,30 @@ export const presetDaisy = <Theme extends object = object>(
     defaultMeta: { layer: 'daisy-3-components' },
   })
 
-  const selectors = getSelectors(Object.keys(defaultThemes))
+  const processedThemes = processThemes(
+    themes,
+    defaultDaisyThemes,
+    '--daisy-vars-'
+  )
 
-  const variablesPreflights: Preflight[] = []
+  const selectors = getSelectors(Object.keys(processedThemes))
 
-  for (const [themeName, theme] of Object.entries(defaultThemes)) {
-    if (theme.variables) {
-      variablesPreflights.push({
-        getCSS: () => {
-          // const rootNode =C
-
-          const selector = selectors[themeName] ?? `[data-theme="${themeName}"]`
-
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const declarations = Object.entries(theme.variables!).map(
-            ([key, value]) => {
-              return `${kebabCase(key)}:${value}`
-            }
-          )
-
-          return `${selector} { ${declarations.join(';')} }`
-        },
-        layer: 'daisy-1-base',
-      })
-    }
-  }
+  const variablesPreflights: Preflight[] = extractVarsPreflights(
+    processedThemes,
+    selectors,
+    'daisy-1-3-theme-vars'
+  )
 
   preflights.push(...variablesPreflights)
 
-  const presetThemeConfig = presetTheme({
-    theme: defaultThemes,
+  const presetThemeConfig = presetTheme<DaisyExtendTheme<Theme>>({
+    theme: processedThemes,
     selectors,
     prefix: '--daisy',
   })
 
-  // const presetThemePreflights = presetThemeConfig.preflights
-
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  presetThemeConfig.preflights![0].layer = 'daisy-1-base'
+  presetThemeConfig.preflights![0].layer = 'daisy-1-2-theme-colors'
 
   return {
     name: 'unocss-preset-daisy',
@@ -191,3 +186,5 @@ export const presetDaisy = <Theme extends object = object>(
     variants: [variantInherit, variantScoped],
   }
 }
+
+export { defaultDaisyThemes, getDefaultThemes } from './default-themes'
