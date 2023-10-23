@@ -14,6 +14,9 @@ dependencies:
   camelcase:
     specifier: ^8.0.0
     version: 8.0.0
+  colord:
+    specifier: ^2.9.3
+    version: 2.9.3
   parsel-js:
     specifier: ^1.1.2
     version: 1.1.2
@@ -28,7 +31,7 @@ dependencies:
     version: 6.0.2(postcss@8.4.31)
   unocss-preset-theme:
     specifier: ^0.10.1
-    version: 0.10.1(@unocss/core@0.56.5)
+    version: 0.10.1(@unocss/core@0.57.0)
 
 devDependencies:
   '@antfu/ni':
@@ -1170,6 +1173,10 @@ packages:
   /@unocss/core@0.56.5:
     resolution: {integrity: sha512-fx5VhOjSHn0HdV2D34pEwFMAHJcJQRTCp1xEE4GzxY1irXzaa+m2aYf5PZjmDxehiOC16IH7TO9FOWANXk1E0w==}
 
+  /@unocss/core@0.57.0:
+    resolution: {integrity: sha512-vjLnE3PnbFQY0du8jC1hZorFNFlVBBeqo7AoO+69Jqx7aJx3gtBlg4QQV607LIJgU+hsul3RUy8r/pKb7y1MoA==}
+    dev: false
+
   /@unocss/extractor-arbitrary-variants@0.56.5:
     resolution: {integrity: sha512-p2pyzz/ONvc5CGcaB9OZvWE8qkRSgyuhaQqFQLdBFeUhveHC0CGP0iSnXwBgAFHWM7DJo4/JpWeZ+mBt0ogVLA==}
     dependencies:
@@ -1706,7 +1713,6 @@ packages:
 
   /colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
-    dev: true
 
   /colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -4478,12 +4484,12 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: true
 
-  /unocss-preset-theme@0.10.1(@unocss/core@0.56.5):
+  /unocss-preset-theme@0.10.1(@unocss/core@0.57.0):
     resolution: {integrity: sha512-h0hBH/jVDHdJDqV0btZcctVnG7qetD4vsgp9RMNsFcXsALzn7TnF0lj/YzsFs3X+YjOojZfaQYcD3FXjZce85w==}
     peerDependencies:
       '@unocss/core': '>= 0.52.0'
     dependencies:
-      '@unocss/core': 0.56.5
+      '@unocss/core': 0.57.0
       '@unocss/rule-utils': 0.56.5
     dev: false
 

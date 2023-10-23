@@ -62,6 +62,7 @@
     "@tailwindcss/nesting": "0.0.0-insiders.565cd3e",
     "@unocss/rule-utils": "^0.56.5",
     "camelcase": "^8.0.0",
+    "colord": "^2.9.3",
     "parsel-js": "^1.1.2",
     "postcss": "^8.4.31",
     "postcss-js": "^4.0.1",
