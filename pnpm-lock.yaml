@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  unocss-preset-theme@0.10.1:
+    hash: 6f4eics4cxthsyvkdifgozrjf4
+    path: patches/unocss-preset-theme@0.10.1.patch
+
 dependencies:
   '@tailwindcss/nesting':
     specifier: 0.0.0-insiders.565cd3e
@@ -31,7 +36,7 @@ dependencies:
     version: 6.0.2(postcss@8.4.31)
   unocss-preset-theme:
     specifier: ^0.10.1
-    version: 0.10.1(@unocss/core@0.56.5)
+    version: 0.10.1(patch_hash=6f4eics4cxthsyvkdifgozrjf4)(@unocss/core@0.56.5)
 
 devDependencies:
   '@antfu/ni':
@@ -4469,7 +4474,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: true
 
-  /unocss-preset-theme@0.10.1(@unocss/core@0.56.5):
+  /unocss-preset-theme@0.10.1(patch_hash=6f4eics4cxthsyvkdifgozrjf4)(@unocss/core@0.56.5):
     resolution: {integrity: sha512-h0hBH/jVDHdJDqV0btZcctVnG7qetD4vsgp9RMNsFcXsALzn7TnF0lj/YzsFs3X+YjOojZfaQYcD3FXjZce85w==}
     peerDependencies:
       '@unocss/core': '>= 0.52.0'
@@ -4477,6 +4482,7 @@ packages:
       '@unocss/core': 0.56.5
       '@unocss/rule-utils': 0.56.5
     dev: false
+    patched: true
 
   /unocss@0.56.5(postcss@8.4.31)(rollup@3.29.4)(vite@4.4.9):
     resolution: {integrity: sha512-tO+9St4CntSjHpLXZqBo0/etS06MtvFF1NEny/qFJCL9sCopWwmDKuzW6/LIb4wfqZLdMpVFoEACMNv8nP849A==}

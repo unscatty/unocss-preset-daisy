@@ -72,5 +72,10 @@
   "peerDependencies": {
     "daisyui": "^3.8.3",
     "unocss": "^0.56.4"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "unocss-preset-theme@0.10.1": "patches/unocss-preset-theme@0.10.1.patch"
+    }
   }
 }
