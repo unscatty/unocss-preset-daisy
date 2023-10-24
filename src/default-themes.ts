@@ -6,6 +6,7 @@ import {
   DaisyColors,
   DaisyGeneratedTheme,
   DaisyDefaultThemeNames,
+  DaisyThemesOrNot,
 } from './types'
 import { isEmptyObject } from './utils/object'
 
@@ -89,4 +90,17 @@ export const getDefaultThemes = (themeNames: DaisyDefaultThemeNames[]) => {
   }
 
   return selectedThemes
+}
+
+export const excludeDefaultThemes = (themeNames: DaisyDefaultThemeNames[]) => {
+  const excludedThemes: DaisyThemesOrNot = {}
+
+  for (const themeName of themeNames) {
+    if (defaultDaisyThemes[themeName]) {
+      // If themeName is a default theme, exclude it
+      excludedThemes[themeName] = false
+    }
+  }
+
+  return excludedThemes
 }

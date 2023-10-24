@@ -62,12 +62,13 @@ const defaultOptions: DaisyPresetOptions = {
   darkTheme: 'dark',
 }
 
+// TODO: default and dark theme
 export const presetDaisy = <Theme extends object = object>(
   options: DaisyPresetOptions<Theme> = {}
 ): Preset<DaisyExtendTheme<Theme>> => {
   options = { ...defaultOptions, ...options }
 
-  let themes: Record<string, DaisyExtendTheme<Theme>> = {}
+  let themes: NonNullable<DaisyPresetOptions['themes']> = {}
 
   if (options.themes) {
     themes = options.themes === true ? defaultDaisyThemes : options.themes
@@ -187,4 +188,4 @@ export const presetDaisy = <Theme extends object = object>(
   }
 }
 
-export { defaultDaisyThemes, getDefaultThemes } from './default-themes'
+export { defaultDaisyThemes, getDefaultThemes, excludeDefaultThemes } from './default-themes'

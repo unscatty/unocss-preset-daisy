@@ -7,6 +7,8 @@ import {
   DaisyGeneratedTheme,
   DaisyDefaultThemeNames,
   DaisyExtendTheme,
+  DaisyThemes,
+  DaisyThemesOrNot,
 } from '../types'
 import { kebabCase } from './case'
 
@@ -99,6 +101,17 @@ export const extractVarsPreflights = (
   }
 
   return preflights
+}
+
+const themeColorsToKebabCase = (themeColors: DaisyColors): DaisyColors => {
+  const convertedColors: DaisyColors = {}
+
+  for (const [key, value] of Object.entries(themeColors)) {
+    convertedColors[kebabCase(key)] =
+      typeof value === 'string' ? value : themeColorsToKebabCase(value) // Recursively convert nested colors
+  }
+
+  return convertedColors
 }
 
 export const prefixThemeVars = (
@@ -202,14 +215,23 @@ export const themeColorsToHSL = (themeColors: DaisyColors): DaisyColors => {
   return convertedColors
 }
 
+// TODO: handle `base` colors
 export const processThemes = (
-  themes: Record<string, DaisyExtendTheme>,
+  themes: DaisyThemesOrNot,
   defaultThemes: Record<string, DaisyGeneratedTheme>,
   varsPrefix: string
-): typeof themes => {
+): DaisyThemes => {
   const processedThemes: Record<string, DaisyExtendTheme> = {}
 
   for (const [themeName, theme] of Object.entries(themes)) {
+    if (theme === false) {
+      // Skip thems that are set to false
+      continue
+    }
+
+    // Convert theme colors to kebab-case
+    theme.colors = themeColorsToKebabCase(theme.colors ?? {})
+
     // Convert camelCase variable names to kebab-case
     prefixThemeVars(theme, '--')
 
