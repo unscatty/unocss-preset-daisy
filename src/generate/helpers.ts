@@ -217,8 +217,8 @@ export const generateShortcuts = (
       for (const child of node.nodes) {
         if (child.type === 'atrule' && child.name === 'apply') {
           // Add rule to generated rules if there are declarations
-          if (currentRuleEntries.length > 0) {
-            const ruleName = `rule-${classNames[0]!}-${makeid(8)}`
+          if (currentRuleEntries.length > 0 && classNames.length > 0) {
+            const ruleName = `rule-${classNames[0]}-${makeid(8)}`
 
             generatedRules.push([
               ruleName,
@@ -249,8 +249,8 @@ export const generateShortcuts = (
       }
 
       // Add rule to generated rules if there are declarations left
-      if (currentRuleEntries.length > 0) {
-        const ruleName = `rule-${classNames[0]!}-${makeid(8)}`
+      if (currentRuleEntries.length > 0 && classNames.length > 0) {
+        const ruleName = `rule-${classNames[0]}-${makeid(8)}`
 
         generatedRules.push([ruleName, currentRuleEntries, { internal: true }])
         currentRuleEntries = []
