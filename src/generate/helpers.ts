@@ -10,6 +10,7 @@ import {
   normalizeSelector,
   replaceSelectorWithPlaceholder,
   replaceVariables,
+  makeid
 } from './utils'
 
 export const mergeMaps = (
@@ -156,19 +157,6 @@ const mergeIntoMap = (
   } else {
     map.set(shortcutName, { values: newShortcutValues, meta: newMeta })
   }
-}
-
-const makeid = (length: number) => {
-  let result = ''
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  const charactersLength = characters.length
-
-  for (let counter = 0; counter < length; counter++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
-  }
-
-  return result
 }
 
 // TODO: handle keyframes

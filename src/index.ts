@@ -1,9 +1,14 @@
 // <reference path="./data-json.d.ts" />
-import { StaticRule, type Preflight, type Preset } from 'unocss'
+import { Shortcut, StaticRule, type Preflight, type Preset } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import { defaultDaisyThemes, getDefaultThemes } from './default-themes'
 import { mergeMaps } from './generate/helpers'
-import { variantInherit, variantScoped } from './generate/variants'
+import {
+  variantWeakInherit,
+  variantInherit,
+  variantScoped,
+  variantTheme,
+} from './generate/variants'
 
 import {
   GeneratedShortcutsEntries,
@@ -51,6 +56,7 @@ import {
   extractVarsPreflights,
   getSelectors,
   processThemes,
+  scopeThemeShortcuts,
 } from './utils/preset'
 
 const defaultOptions: DaisyPresetOptions = {
@@ -148,11 +154,6 @@ export const presetDaisy = <Theme extends object = object>(
     })
   }
 
-  const shortcuts = generatedShortcutsMapToStaticShortcuts(styles, {
-    uniques: true,
-    defaultMeta: { layer: 'daisy-3-components' },
-  })
-
   const processedThemes = processThemes(
     themes,
     defaultDaisyThemes,
@@ -160,6 +161,25 @@ export const presetDaisy = <Theme extends object = object>(
   )
 
   const selectors = getSelectors(Object.keys(processedThemes))
+
+  // Shortcuts
+  // Scoped shortcuts in themes
+  const [scopedStaticShortcuts, scopedDynamicShortcuts] = scopeThemeShortcuts(
+    processedThemes,
+    selectors,
+    rules
+  )
+
+  // Merge scoped shortcuts with generated shortcuts
+  styles = mergeMaps([styles, scopedStaticShortcuts])
+
+  const shortcuts: Shortcut[] = generatedShortcutsMapToStaticShortcuts(styles, {
+    uniques: true,
+    defaultMeta: { layer: 'daisy-3-components' },
+  })
+
+  // Add dynamic shortcuts
+  shortcuts.push(...scopedDynamicShortcuts)
 
   const variablesPreflights: Preflight[] = extractVarsPreflights(
     processedThemes,
@@ -184,8 +204,17 @@ export const presetDaisy = <Theme extends object = object>(
     presets: [presetThemeConfig],
     rules,
     shortcuts,
-    variants: [variantInherit, variantScoped],
+    variants: [
+      variantInherit,
+      variantWeakInherit,
+      variantScoped,
+      variantTheme(selectors),
+    ],
   }
 }
 
-export { defaultDaisyThemes, getDefaultThemes, excludeDefaultThemes } from './default-themes'
+export {
+  defaultDaisyThemes,
+  excludeDefaultThemes,
+  getDefaultThemes,
+} from './default-themes'

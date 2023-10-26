@@ -1,16 +1,31 @@
 import { colord } from 'colord'
 import daisyThemeDefaults from 'daisyui/src/theming/themeDefaults'
-import { Preflight, mergeDeep } from 'unocss'
+import {
+  Preflight,
+  Rule,
+  RuleMeta,
+  Shortcut,
+  mergeDeep,
+  resolveShortcuts,
+} from 'unocss'
 import { convertThemeColors } from '../default-themes'
+import { GeneratedShortcutsIterable } from '../generate/types'
 import {
   DaisyColors,
-  DaisyGeneratedTheme,
   DaisyDefaultThemeNames,
   DaisyExtendTheme,
+  DaisyGeneratedTheme,
   DaisyThemes,
   DaisyThemesOrNot,
 } from '../types'
 import { kebabCase } from './case'
+import { entriesIterable } from './object'
+import {
+  DynamicShortcutStrings,
+  StaticShortcutStrings,
+  scopeShortcuts,
+  scopedStaticShortcutsToMap,
+} from './shortcuts'
 
 export const defaultSelectorFn = (themeName: string) => {
   return `[data-theme="${themeName}"]`
@@ -223,7 +238,7 @@ export const processThemes = (
 ): DaisyThemes => {
   const processedThemes: Record<string, DaisyExtendTheme> = {}
 
-  for (const [themeName, theme] of Object.entries(themes)) {
+  for (const [themeName, theme] of entriesIterable(themes)) {
     if (theme === false) {
       // Skip thems that are set to false
       continue
@@ -256,4 +271,61 @@ export const processThemes = (
   }
 
   return processedThemes
+}
+
+export const extractThemesShortcuts = (
+  themes: DaisyThemes
+): Record<string, Shortcut[]> => {
+  const themeShortcuts: Record<string, Shortcut[]> = {}
+
+  for (const [themeName, theme] of entriesIterable(themes)) {
+    if (theme.shortcuts) {
+      themeShortcuts[themeName] = resolveShortcuts(theme.shortcuts)
+    }
+  }
+
+  return themeShortcuts
+}
+
+const scopeExtractedShortcuts = (
+  themeShortcuts: Record<string, Shortcut[]>,
+  selectors: Record<string, string | string[]>,
+  rules: Rule[]
+): [StaticShortcutStrings[], DynamicShortcutStrings[]] => {
+  const scopedStaticShortcuts: StaticShortcutStrings[] = []
+  const scopedDynamicShortcuts: DynamicShortcutStrings[] = []
+
+  for (const [themeName, shortcuts] of entriesIterable(themeShortcuts)) {
+    const themeSelectors = selectors[themeName]
+
+    if (!themeSelectors) {
+      continue
+    }
+
+    const [scopedStaticShortcut, scopedDynamicShortcut] = scopeShortcuts(
+      shortcuts,
+      themeSelectors,
+      rules
+    )
+
+    scopedStaticShortcuts.push(...scopedStaticShortcut)
+    scopedDynamicShortcuts.push(...scopedDynamicShortcut)
+  }
+
+  return [scopedStaticShortcuts, scopedDynamicShortcuts]
+}
+
+export const scopeThemeShortcuts = (
+  themes: DaisyThemes,
+  selectors: Record<string, string | string[]>,
+  rules: Rule[],
+  defaultMeta?: RuleMeta
+): [GeneratedShortcutsIterable, DynamicShortcutStrings[]] => {
+  const [scopedStaticShortcuts, scopedDynamicShortcuts] =
+    scopeExtractedShortcuts(extractThemesShortcuts(themes), selectors, rules)
+
+  return [
+    scopedStaticShortcutsToMap(scopedStaticShortcuts, defaultMeta),
+    scopedDynamicShortcuts,
+  ]
 }
