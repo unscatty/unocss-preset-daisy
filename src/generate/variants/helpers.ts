@@ -1,3 +1,5 @@
+import { CommaToken, tokenize } from 'parsel-js'
+
 const bracketTypeRe = /^\[(color|length|position|quoted|string):/i
 
 function bracketWithType(str: string, requiredType?: string) {
@@ -83,4 +85,43 @@ function bracketWithType(str: string, requiredType?: string) {
 
 export function bracket(str: string) {
   return bracketWithType(str)
+}
+
+function splitStringAtRanges(
+  inputString: string,
+  ranges: [number, number][]
+): string[] {
+  const result: string[] = []
+  let start = 0
+
+  for (const [rangeStart, rangeEnd] of ranges) {
+    if (rangeStart >= start && rangeStart < inputString.length) {
+      result.push(inputString.slice(start, rangeStart))
+      start = rangeEnd
+    }
+  }
+
+  // Add the remaining part of the string after the last range
+  if (start < inputString.length) {
+    result.push(inputString.slice(start))
+  }
+
+  return result
+}
+
+export const splitSelector = (selector: string): string[] => {
+  const tokens = tokenize(selector)
+
+  const commaTokens: CommaToken[] = []
+
+  for (const token of tokens) {
+    if (token.type === 'comma') {
+      commaTokens.push(token)
+    }
+  }
+
+  return splitStringAtRanges(
+    selector,
+    commaTokens.map((t) => t.pos)
+  ).map((s) => s.trim())
 }
