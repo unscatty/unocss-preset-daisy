@@ -1,6 +1,6 @@
 import { defineConfig, presetIcons, presetUno } from 'unocss'
 
-import { presetDaisy } from '../dist/index'
+import { presetDaisy } from '../src/index'
 
 export default defineConfig({
   presets: [
