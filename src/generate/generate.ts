@@ -10,7 +10,6 @@ import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
 import {
   generateShortcutsRulesAndPreflights,
   replacePrefix,
-  replaceSlash,
 } from './helpers'
 import { applyPatches, patches } from './patch'
 
@@ -48,7 +47,7 @@ for (const styleFile of styleFiles) {
     {
       rules: patchedRules,
       shortcuts: [...patchedShortcuts.entries()],
-      preflights: replaceSlash(patchablePreflights.toString()),
+      preflights: patchablePreflights.toString(),
     },
     // eslint-disable-next-line unicorn/no-null
     null,

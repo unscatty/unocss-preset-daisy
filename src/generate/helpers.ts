@@ -167,7 +167,6 @@ const makeid = (length: number) => {
   return result
 }
 
-// TODO: handle keyframes
 // TODO: check for ghost shortcuts (glass and btn-glass)
 export const generateShortcuts = (
   css: postcss.ChildNode[],
@@ -294,9 +293,6 @@ export const generateShortcuts = (
 }
 
 export const replacePrefix = (css: string) => css.replace(/--tw-/g, '--un-')
-// UnoCSS uses comma syntax
-// var(--foo) / 0.1 -> var(--foo), 0.1
-export const replaceSlash = (css: string) => css.replaceAll(') / ', '), ')
 
 export const generateShortcutsRulesAndPreflights = (css: CssInJs) => {
   const { updatedNodes: nodesWithoutKeyframes, keyframes } =
