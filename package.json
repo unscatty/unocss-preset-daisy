@@ -60,6 +60,7 @@
   "packageManager": "pnpm@8.6.12",
   "dependencies": {
     "@tailwindcss/nesting": "0.0.0-insiders.565cd3e",
+    "@unocss/core": "~0.56",
     "@unocss/rule-utils": "^0.56.5",
     "camelcase": "^8.0.0",
     "colord": "^2.9.3",
@@ -70,12 +71,8 @@
     "unocss-preset-theme": "^0.10.1"
   },
   "peerDependencies": {
+    "@unocss/core": "~0.56",
     "daisyui": "^3.8.3",
     "unocss": "^0.56.4"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "unocss-preset-theme@0.10.1": "patches/unocss-preset-theme@0.10.1.patch"
-    }
   }
 }

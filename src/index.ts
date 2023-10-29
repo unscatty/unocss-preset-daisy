@@ -1,14 +1,15 @@
 // <reference path="./data-json.d.ts" />
+import daisyThemeDefaults from 'daisyui/src/theming/themeDefaults'
 import { Shortcut, StaticRule, type Preflight, type Preset } from 'unocss'
-import { presetTheme } from 'unocss-preset-theme'
 import { defaultDaisyThemes, getDefaultThemes } from './default-themes'
 import { mergeMaps } from './generate/helpers'
 import {
-  variantWeakInherit,
   variantInherit,
   variantScoped,
   variantTheme,
+  variantWeakInherit,
 } from './generate/variants'
+import { presetTheme } from './presets/theme'
 
 import {
   GeneratedShortcutsEntries,
@@ -51,13 +52,17 @@ import {
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
 } from './generated/utilities.json'
-import { DaisyExtendTheme, DaisyPresetOptions } from './types'
+import { DaisyExtendTheme, DaisyPresetOptions, DaisySelectors } from './types'
 import {
-  extractVarsPreflights,
+  defaultSelectorFn,
   getSelectors,
   processThemes,
   scopeThemeShortcuts,
 } from './utils/preset'
+
+const defaultColorSchemeOption = {
+  dark: 'dark',
+}
 
 const defaultOptions: DaisyPresetOptions = {
   styled: true,
@@ -65,15 +70,17 @@ const defaultOptions: DaisyPresetOptions = {
   base: true,
   utils: true,
   rtl: false,
-  darkTheme: 'dark',
+  selectors: defaultSelectorFn,
+  useColorScheme: defaultColorSchemeOption,
+  rootTheme: 'light',
 }
 
-// TODO: default and dark theme
 export const presetDaisy = <Theme extends object = object>(
   options: DaisyPresetOptions<Theme> = {}
 ): Preset<DaisyExtendTheme<Theme>> => {
   options = { ...defaultOptions, ...options }
 
+  // Resolve themes
   let themes: NonNullable<DaisyPresetOptions['themes']> = {}
 
   if (options.themes) {
@@ -160,13 +167,31 @@ export const presetDaisy = <Theme extends object = object>(
     '--daisy-vars-'
   )
 
-  const selectors = getSelectors(Object.keys(processedThemes))
+  // Resolve selectors
+  const themeSelectors =
+    typeof options.selectors === 'function'
+      ? getSelectors(Object.keys(processedThemes), options.selectors)
+      : options.selectors ?? {}
+
+  const presetThemeConfig = presetTheme<DaisyExtendTheme<Theme>>({
+    themes: structuredClone(processedThemes),
+    selectors: themeSelectors,
+    prefix: '--daisy',
+    layer: 'daisy-1-2-themes',
+    themeOrder: daisyThemeDefaults.themeOrder,
+    useColorScheme: options.useColorScheme,
+    rootTheme: options.rootTheme,
+  })
+
+  const selectorsWithRoot: DaisySelectors =
+    presetThemeConfig.options?.selectors ?? themeSelectors
 
   // Shortcuts
   // Scoped shortcuts in themes
+  // Dynamic shortcuts won't be merged with generated shortcuts, they will override them
   const [scopedStaticShortcuts, scopedDynamicShortcuts] = scopeThemeShortcuts(
     processedThemes,
-    selectors,
+    selectorsWithRoot,
     rules
   )
 
@@ -181,23 +206,6 @@ export const presetDaisy = <Theme extends object = object>(
   // Add dynamic shortcuts
   shortcuts.push(...scopedDynamicShortcuts)
 
-  const variablesPreflights: Preflight[] = extractVarsPreflights(
-    processedThemes,
-    selectors,
-    'daisy-1-3-theme-vars'
-  )
-
-  preflights.push(...variablesPreflights)
-
-  const presetThemeConfig = presetTheme<DaisyExtendTheme<Theme>>({
-    theme: processedThemes,
-    selectors,
-    prefix: '--daisy',
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  presetThemeConfig.preflights![0].layer = 'daisy-1-2-theme-colors'
-
   return {
     name: 'unocss-preset-daisy',
     preflights,
@@ -208,7 +216,7 @@ export const presetDaisy = <Theme extends object = object>(
       variantInherit,
       variantWeakInherit,
       variantScoped,
-      variantTheme(selectors),
+      variantTheme(selectorsWithRoot),
     ],
   }
 }

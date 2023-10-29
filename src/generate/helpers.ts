@@ -294,7 +294,7 @@ export const generateShortcuts = (
 }
 
 export const replaceTwPrefix = (css: string) => css.replace(/--tw-/g, '--un-')
-// TODO: parse decl to find 'hsl' functions and replace '/' with ','
+// TODO: unocss supports space-separated values since v0.57
 // UnoCSS uses comma syntax
 // var(--foo) / 0.1 -> var(--foo), 0.1
 export const replaceSlash = (css: string) => css.replaceAll(') / ', '), ')

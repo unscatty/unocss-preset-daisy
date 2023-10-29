@@ -1,13 +1,5 @@
 import { colord } from 'colord'
-import daisyThemeDefaults from 'daisyui/src/theming/themeDefaults'
-import {
-  Preflight,
-  Rule,
-  RuleMeta,
-  Shortcut,
-  mergeDeep,
-  resolveShortcuts,
-} from 'unocss'
+import { Rule, RuleMeta, Shortcut, mergeDeep, resolveShortcuts } from 'unocss'
 import { convertThemeColors } from '../default-themes'
 import { GeneratedShortcutsIterable } from '../generate/types'
 import {
@@ -15,6 +7,8 @@ import {
   DaisyDefaultThemeNames,
   DaisyExtendTheme,
   DaisyGeneratedTheme,
+  DaisySelectorFn,
+  DaisySelectors,
   DaisyThemes,
   DaisyThemesOrNot,
 } from '../types'
@@ -27,95 +21,21 @@ import {
   scopedStaticShortcutsToMap,
 } from './shortcuts'
 
-export const defaultSelectorFn = (themeName: string) => {
+export const defaultSelectorFn: DaisySelectorFn = (themeName: string) => {
   return `[data-theme="${themeName}"]`
 }
 
 export const getSelectors = (
   themeNames: string[],
-  selectorFn = defaultSelectorFn
-) => {
-  const selectors: Record<string, string> = {}
+  selectorFn: DaisySelectorFn = defaultSelectorFn
+): DaisySelectors => {
+  const selectors: DaisySelectors = {}
 
   for (const themeName of themeNames) {
-    if (themeName === 'light') {
-      selectors.light = ':root'
-    } else {
-      selectors[themeName] = selectorFn(themeName)
-    }
+    selectors[themeName] = selectorFn(themeName)
   }
 
   return selectors
-}
-
-const getThemeVarsPreflight = (
-  theme: DaisyExtendTheme,
-  themeName: string,
-  selectors: Record<string, string>,
-  layer: string
-): Preflight | undefined => {
-  if (theme.variables) {
-    return {
-      getCSS: () => {
-        const selector = selectors[themeName] ?? `[data-theme="${themeName}"]`
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const declarations = Object.entries(theme.variables!).map(
-          ([key, value]) => {
-            return `${kebabCase(key)}:${value}`
-          }
-        )
-
-        return `${selector} { ${declarations.join(';')} }`
-      },
-      layer,
-    }
-  }
-}
-
-export const extractVarsPreflights = (
-  themes: Record<string, DaisyExtendTheme>,
-  selectors: Record<string, string>,
-  layer: string
-): Preflight[] => {
-  const preflights: Preflight[] = []
-
-  // Process default themes in order
-  for (const themeName of daisyThemeDefaults.themeOrder) {
-    const existingDefaultTheme = themes[themeName]
-
-    if (!existingDefaultTheme) {
-      continue
-    }
-
-    const preflight = getThemeVarsPreflight(
-      existingDefaultTheme,
-      themeName,
-      selectors,
-      layer
-    )
-
-    if (preflight) {
-      preflights.push(preflight)
-    }
-  }
-
-  for (const [themeName, theme] of Object.entries(themes)) {
-    if (!daisyThemeDefaults.themeOrder.includes(themeName) && theme.variables) {
-      const preflight = getThemeVarsPreflight(
-        theme,
-        themeName,
-        selectors,
-        layer
-      )
-
-      if (preflight) {
-        preflights.push(preflight)
-      }
-    }
-  }
-
-  return preflights
 }
 
 const themeColorsToKebabCase = (themeColors: DaisyColors): DaisyColors => {
@@ -239,7 +159,7 @@ export const processThemes = (
   const processedThemes: Record<string, DaisyExtendTheme> = {}
 
   for (const [themeName, theme] of entriesIterable(themes)) {
-    if (theme === false) {
+    if (!theme || !themeName) {
       // Skip thems that are set to false
       continue
     }
@@ -257,14 +177,6 @@ export const processThemes = (
 
     if (processedTheme.colors) {
       processedTheme.colors = themeColorsToHSL(processedTheme.colors)
-    }
-
-    // Add color-scheme to variables
-    if (processedTheme.colorScheme) {
-      processedTheme.variables = {
-        'color-scheme': processedTheme.colorScheme,
-        ...processedTheme.variables,
-      }
     }
 
     processedThemes[themeName] = processedTheme

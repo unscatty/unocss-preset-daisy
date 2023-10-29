@@ -43,13 +43,15 @@ export type DaisyDefaultVarNames =
   | 'tabBorder'
   | 'tabRadius'
 
+export type DaisyThemeVars = Partial<{ [k in DaisyDefaultVarNames]: string }> &
+  Record<string, string>
+
 export type DaisyGeneratedTheme<Theme extends object = object> =
   Partial<Theme> &
     Partial<{
       colorScheme: string
       colors: DaisyColors
-      variables: Partial<{ [k in DaisyDefaultVarNames]: string }> &
-        Record<string, string>
+      variables: DaisyThemeVars
       fontFamily: Record<string, string>
     }>
 
@@ -85,11 +87,26 @@ export type DaisyThemesOrNot<Theme extends object = object> = Exclude<
   boolean
 >
 
+export type DaisySelectorFn = (themeName: string) => string | string[]
+
+export type DaisySelectors = Record<string, string | string[]>
+
+export type DaisySelectorOptions = DaisySelectors | DaisySelectorFn
+
+export type DaisyColorScheme = {
+  light?: string
+  dark?: string
+}
+
+export type DaisyUseColorSchemeOption = boolean | DaisyColorScheme
+
 export type DaisyPresetOptions<Theme extends object = object> = Partial<{
   styled: boolean
   themes: DaisyPresetOptionsThemes<Theme>
   base: boolean
   utils: boolean
   rtl: boolean
-  darkTheme: string
+  selectors: DaisySelectorOptions
+  rootTheme: string
+  useColorScheme: DaisyUseColorSchemeOption
 }>
