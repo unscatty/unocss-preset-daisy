@@ -23,7 +23,7 @@ export const variantScoped: Variant = {
             return selectors
               .map((selector) => {
                 // Handle selector already scoped
-                return selector.startsWith(scope + ' ')
+                return selectors.some((s) => s.startsWith(scope + ' '))
                   ? selector
                   : `${scope} ${selector}`
               })
