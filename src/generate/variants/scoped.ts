@@ -1,6 +1,6 @@
-import { Variant } from 'unocss'
 import { variantGetBracket } from '@unocss/rule-utils'
-import { bracket } from './helpers'
+import { Variant } from 'unocss'
+import { bracket, splitSelector } from './helpers'
 
 export const variantScoped: Variant = {
   name: 'scoped',
@@ -17,9 +17,23 @@ export const variantScoped: Variant = {
       if (scope) {
         return {
           matcher: rest,
-          selector: (s) => `${scope} ${s}`,
+          selector: (s) => {
+            const selectors = s.includes(',') ? splitSelector(s) : [s]
+            // Handle multiple selectors
+            return selectors
+              .map((selector) => {
+                // Handle selector already scoped
+                return selectors.some((s) => s.startsWith(scope + ' '))
+                  ? selector
+                  : `${scope} ${selector}`
+              })
+              .join(',')
+          },
+          order: 1000,
         }
       }
     }
   },
+  order: 1000,
+  multiPass: true,
 }

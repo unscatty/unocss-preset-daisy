@@ -1,17 +1,20 @@
 // <reference path="./data-json.d.ts" />
-import postcss from 'postcss'
-import { parse, type CssInJs } from 'postcss-js'
-
-import camelCase from 'camelcase'
-import colorFunctions from 'daisyui/src/theming/functions'
-import colors from 'daisyui/src/theming/index'
-import themes from 'daisyui/src/theming/themes'
-import { StaticRule, type Preflight, type Preset } from 'unocss'
-
-import { variantInherit, variantScoped } from './generate/variants'
-
+import daisyThemeDefaults from 'daisyui/src/theming/themeDefaults'
+import { Shortcut, StaticRule, type Preflight, type Preset } from 'unocss'
+import { defaultDaisyThemes, getDefaultThemes } from './default-themes'
 import { mergeMaps } from './generate/helpers'
-import { GeneratedShortcutsMap } from './generate/types'
+import {
+  variantInherit,
+  variantScoped,
+  variantTheme,
+  variantWeakInherit,
+} from './generate/variants'
+import { presetTheme } from './presets/theme'
+
+import {
+  GeneratedShortcutsEntries,
+  GeneratedShortcutsMap,
+} from './generate/types'
 import { generatedShortcutsMapToStaticShortcuts } from './generate/utils'
 import { preflights as basePreflights } from './generated/base.json'
 import {
@@ -49,42 +52,55 @@ import {
   rules as utilitiesRules,
   shortcuts as utilitiesShortcuts,
 } from './generated/utilities.json'
-// import { writeFileSync } from 'fs'
+import { DaisyExtendTheme, DaisyPresetOptions, DaisySelectors } from './types'
+import {
+  defaultSelectorFn,
+  getSelectors,
+  processThemes,
+  scopeThemeShortcuts,
+} from './utils/preset'
 
-const processor = postcss()
-const process = (object: CssInJs) =>
-  processor.process(object, { parser: parse })
+const defaultColorSchemeOption = {
+  dark: 'dark',
+}
 
-const defaultOptions = {
+const defaultOptions: DaisyPresetOptions = {
   styled: true,
-  themes: false as
-    | boolean
-    | Array<string | Record<string, Record<string, string>>>,
+  themes: getDefaultThemes(['light', 'dark']),
   base: true,
   utils: true,
   rtl: false,
-  darkTheme: 'dark',
+  selectors: defaultSelectorFn,
+  useColorScheme: defaultColorSchemeOption,
+  rootTheme: 'light',
 }
 
-export const presetDaisy = (
-  options: Partial<typeof defaultOptions> = {}
-): Preset => {
+export const presetDaisy = <Theme extends object = object>(
+  options: DaisyPresetOptions<Theme> = {}
+): Preset<DaisyExtendTheme<Theme>> => {
   options = { ...defaultOptions, ...options }
+
+  // Resolve themes
+  let themes: NonNullable<DaisyPresetOptions['themes']> = {}
+
+  if (options.themes) {
+    themes = options.themes === true ? defaultDaisyThemes : options.themes
+  }
 
   const generatedPreflights: string[] = []
 
-  let styles: GeneratedShortcutsMap
+  let styles: GeneratedShortcutsEntries | GeneratedShortcutsMap = new Map()
   let rules: StaticRule[] = []
 
   if (options.styled) {
     if (options.rtl) {
-      styles = styledRtlShortcuts as unknown as GeneratedShortcutsMap
+      styles = styledRtlShortcuts as GeneratedShortcutsEntries
 
       generatedPreflights.push(styledRtlPreflights)
 
       rules = styledRtlRules as StaticRule[]
     } else {
-      styles = styledShortcuts as unknown as GeneratedShortcutsMap
+      styles = styledShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(styledPreflights)
 
       rules = styledRules as StaticRule[]
@@ -92,12 +108,12 @@ export const presetDaisy = (
   } else {
     // eslint-disable-next-line no-lonely-if
     if (options.rtl) {
-      styles = unstyledRtlShortcuts as unknown as GeneratedShortcutsMap
+      styles = unstyledRtlShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(unstyledRtlPreflights)
 
       rules = unstyledRtlRules as StaticRule[]
     } else {
-      styles = unstyledShortcuts as unknown as GeneratedShortcutsMap
+      styles = unstyledShortcuts as GeneratedShortcutsEntries
       generatedPreflights.push(unstyledPreflights)
 
       rules = unstyledRules as StaticRule[]
@@ -109,9 +125,9 @@ export const presetDaisy = (
     styles = mergeMaps(
       [
         styles,
-        utilitiesShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesUnstyledShortcuts as unknown as GeneratedShortcutsMap,
-        utilitiesStyledShortcuts as unknown as GeneratedShortcutsMap,
+        utilitiesShortcuts as GeneratedShortcutsEntries,
+        utilitiesUnstyledShortcuts as GeneratedShortcutsEntries,
+        utilitiesStyledShortcuts as GeneratedShortcutsEntries,
       ],
       true
     )
@@ -124,77 +140,89 @@ export const presetDaisy = (
     ]
 
     generatedPreflights.push(
-      utilitiesPreflights as string,
-      utilitiesUnstyledPreflights as string,
-      utilitiesStyledPreflights as string
+      utilitiesPreflights,
+      utilitiesUnstyledPreflights,
+      utilitiesStyledPreflights
     )
   }
 
+  // TODO: Move keyframes to theme config
   const preflights: Preflight[] = [
     {
       getCSS: () => generatedPreflights.join('\n'),
+      layer: 'daisy-1-4-keyframes',
     },
   ]
 
   if (options.base) {
     preflights.unshift({
-      getCSS: () => basePreflights as string,
-      layer: 'daisy-1-base',
+      getCSS: () => basePreflights,
+      layer: 'daisy-1-1-base',
     })
   }
 
-  colorFunctions.injectThemes(
-    (theme) => {
-      preflights.push({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        getCSS: () => process(theme).css,
-        layer: 'daisy-2-themes',
-      })
-    },
-    (key) => {
-      if (key === 'daisyui.themes') {
-        return options.themes
-      }
-
-      if (key === 'daisyui.darkTheme') {
-        return options.darkTheme
-      }
-    },
+  const processedThemes = processThemes(
     themes,
-    'hsl'
+    defaultDaisyThemes,
+    '--daisy-vars-'
   )
 
-  const shortcuts = generatedShortcutsMapToStaticShortcuts(styles, {
+  // Resolve selectors
+  const themeSelectors =
+    typeof options.selectors === 'function'
+      ? getSelectors(Object.keys(processedThemes), options.selectors)
+      : options.selectors ?? {}
+
+  const presetThemeConfig = presetTheme<DaisyExtendTheme<Theme>>({
+    themes: structuredClone(processedThemes),
+    selectors: themeSelectors,
+    prefix: '--daisy',
+    layer: 'daisy-1-2-themes',
+    themeOrder: daisyThemeDefaults.themeOrder,
+    useColorScheme: options.useColorScheme,
+    rootTheme: options.rootTheme,
+  })
+
+  const selectorsWithRoot: DaisySelectors =
+    presetThemeConfig.options?.selectors ?? themeSelectors
+
+  // Shortcuts
+  // Scoped shortcuts in themes
+  // Dynamic shortcuts won't be merged with generated shortcuts, they will override them
+  const [scopedStaticShortcuts, scopedDynamicShortcuts] = scopeThemeShortcuts(
+    processedThemes,
+    selectorsWithRoot,
+    rules
+  )
+
+  // Merge scoped shortcuts with generated shortcuts
+  styles = mergeMaps([styles, scopedStaticShortcuts])
+
+  const shortcuts: Shortcut[] = generatedShortcutsMapToStaticShortcuts(styles, {
     uniques: true,
     defaultMeta: { layer: 'daisy-3-components' },
   })
 
+  // Add dynamic shortcuts
+  shortcuts.push(...scopedDynamicShortcuts)
+
   return {
     name: 'unocss-preset-daisy',
     preflights,
-    theme: {
-      colors: {
-        ...Object.fromEntries(
-          Object.entries(colors)
-            .filter(
-              ([color]) =>
-                // Already in @unocss/preset-mini
-                // https://github.com/unocss/unocss/blob/0f7efcba592e71d81fbb295332b27e6894a0b4fa/packages/preset-mini/src/_theme/colors.ts#L11-L12
-                !['transparent', 'current'].includes(color) &&
-                // Added below
-                !color.startsWith('base')
-            )
-            .map(([color, value]) => [camelCase(color), value])
-        ),
-        base: Object.fromEntries(
-          Object.entries(colors)
-            .filter(([color]) => color.startsWith('base'))
-            .map(([color, value]) => [color.replace('base-', ''), value])
-        ),
-      },
-    },
+    presets: [presetThemeConfig],
     rules,
     shortcuts,
-    variants: [variantInherit, variantScoped],
+    variants: [
+      variantInherit,
+      variantWeakInherit,
+      variantScoped,
+      variantTheme(selectorsWithRoot),
+    ],
   }
 }
+
+export {
+  defaultDaisyThemes,
+  excludeDefaultThemes,
+  getDefaultThemes,
+} from './default-themes'

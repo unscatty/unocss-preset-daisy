@@ -65,7 +65,8 @@ declare module 'daisyui/src/theming/themes' {
   export default themes
 }
 
-declare module 'daisyui/src/theming/colorNames' {
+// Do not remove .js extension
+declare module 'daisyui/src/theming/colorNames.js' {
   const colorNames: Record<string, string>
   export default colorNames
 }
@@ -86,7 +87,8 @@ declare module 'daisyui/src/theming/functions' {
   ): Record<string, string>
 }
 
-declare module 'daisyui/src/theming/themeDefaults' {
+// Do not remove .js extension
+declare module 'daisyui/src/theming/themeDefaults.js' {
   const themeDefaults: {
     themeOrder: string[]
     variables: Record<string, string>
