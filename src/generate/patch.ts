@@ -1,11 +1,16 @@
 import {
   patchCollapseContent,
-  patchMenuItem,
   patchOutlined,
+  patchTransitionProperty,
 } from './patches/index'
 import { GeneratedAssets, Patch } from './types'
 
-export const patches = [patchCollapseContent, patchMenuItem, patchOutlined]
+export const patches = [
+  // Adds transition-no-outline rule to styled assets
+  patchTransitionProperty,
+  patchCollapseContent,
+  patchOutlined,
+]
 
 export const applyPatches = (
   patches: Patch[],
