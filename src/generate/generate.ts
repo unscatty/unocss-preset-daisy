@@ -9,10 +9,7 @@ import {
   utilitiesStyled,
   utilitiesUnstyled,
 } from 'daisy-untailwind'
-import {
-  generateShortcutsRulesAndPreflights,
-  replacePrefix,
-} from './helpers'
+import { generateShortcutsRulesAndPreflights, replacePrefix } from './helpers'
 import { applyPatches, patches } from './patch'
 
 const styleFiles = [

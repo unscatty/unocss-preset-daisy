@@ -29,15 +29,10 @@ export const patchTransitionProperty: Patch = (
 
       if (shortcutValue.endsWith('transition')) {
         // Remove `transition` from the end of the shortcut value
-        const shortVariants = shortcutValue.slice(
-          0,
-          -'transition'.length
-        )
+        const shortVariants = shortcutValue.slice(0, -'transition'.length)
 
         // Add `transition-property` to the end of the shortcut value
-        data.values[
-          index
-        ] = `${shortVariants}transition-no-outline`
+        data.values[index] = `${shortVariants}transition-no-outline`
       }
     }
   }
