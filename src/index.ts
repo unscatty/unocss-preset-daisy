@@ -3,9 +3,7 @@ import postcss from 'postcss'
 import { parse, type CssInJs } from 'postcss-js'
 
 import camelCase from 'camelcase'
-import colorFunctions from 'daisyui/src/theming/functions'
-import colors from 'daisyui/src/theming/index'
-import themes from 'daisyui/src/theming/themes'
+import { colorFunctions, themeColors, themes } from 'daisy-untailwind'
 import { StaticRule, type Preflight, type Preset } from 'unocss'
 
 import { variantInherit, variantScoped } from './generate/variants'
@@ -175,7 +173,7 @@ export const presetDaisy = (
     theme: {
       colors: {
         ...Object.fromEntries(
-          Object.entries(colors)
+          Object.entries(themeColors)
             .filter(
               ([color]) =>
                 // Already in @unocss/preset-mini
@@ -187,7 +185,7 @@ export const presetDaisy = (
             .map(([color, value]) => [camelCase(color), value])
         ),
         base: Object.fromEntries(
-          Object.entries(colors)
+          Object.entries(themeColors)
             .filter(([color]) => color.startsWith('base'))
             .map(([color, value]) => [color.replace('base-', ''), value])
         ),
