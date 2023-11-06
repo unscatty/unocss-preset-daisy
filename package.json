@@ -46,7 +46,7 @@
     "@types/node": "^20.8.9",
     "@types/postcss-js": "^4.0.3",
     "changelogen": "^0.5.5",
-    "daisyui": "^3.9.4",
+    "daisy-untailwind": "^3.9.4",
     "eslint": "^8.52.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.20.0",
@@ -67,7 +67,6 @@
     "postcss-js": "^4.0.1"
   },
   "peerDependencies": {
-    "daisyui": "^3.8.3",
     "unocss": "^0.56.4"
   }
 }
