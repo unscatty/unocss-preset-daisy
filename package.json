@@ -1,6 +1,6 @@
 {
   "name": "@unscatty/unocss-preset-daisy",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "UnoCSS preset for daisyUI",
   "repository": "unscatty/unocss-preset-daisy",
   "homepage": "https://unscatty.github.io/unocss-preset-daisy/",
@@ -46,7 +46,6 @@
     "@types/node": "^20.8.9",
     "@types/postcss-js": "^4.0.3",
     "changelogen": "^0.5.5",
-    "daisyui": "^3.9.4",
     "eslint": "^8.52.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.20.0",
@@ -64,14 +63,13 @@
     "@unocss/rule-utils": "^0.57.1",
     "camelcase": "^8.0.0",
     "colord": "^2.9.3",
+    "daisy-untailwind": "^3.9.4",
     "parsel-js": "^1.1.2",
     "postcss": "^8.4.31",
     "postcss-js": "^4.0.1",
     "postcss-values-parser": "^6.0.2"
   },
   "peerDependencies": {
-    "@unocss/core": "~0.56",
-    "daisyui": "^3.8.3",
     "unocss": "^0.56.4"
   }
 }

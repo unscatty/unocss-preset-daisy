@@ -1,11 +1,13 @@
-import colorNames from 'daisyui/src/theming/colorNames'
-import colorFunctions from 'daisyui/src/theming/functions'
-import daisyDefaultThemes from 'daisyui/src/theming/themes'
-import { invertObject, replaceSpace } from './generate/utils'
+import {
+  colorFunctions,
+  colorNames,
+  themes as daisyDefaultThemes,
+} from 'daisy-untailwind'
+import { invertObject } from './generate/utils'
 import {
   DaisyColors,
-  DaisyGeneratedTheme,
   DaisyDefaultThemeNames,
+  DaisyGeneratedTheme,
   DaisyThemesOrNot,
 } from './types'
 import { isEmptyObject } from './utils/object'
@@ -38,7 +40,7 @@ export const convertThemeColors = (
 
     if (colorName) {
       // Is a color
-      convertedThemeColors[colorName] = `hsl(${replaceSpace(value)})`
+      convertedThemeColors[colorName] = `hsl(${value})`
     } else if (key === 'fontFamily') {
       convertedThemeWithVars.fontFamily = {
         sans: value,

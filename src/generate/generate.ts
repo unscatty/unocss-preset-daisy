@@ -1,16 +1,15 @@
 import { writeFile } from 'node:fs'
-import base from './daisy-untailwind/base'
-import styled from './daisy-untailwind/styled'
-import styledRtl from './daisy-untailwind/styled.rtl'
-import unstyled from './daisy-untailwind/unstyled'
-import unstyledRtl from './daisy-untailwind/unstyled.rtl'
-import utilities from './daisy-untailwind/utilities'
-import utilitiesStyled from './daisy-untailwind/utilities-styled'
-import utilitiesUnstyled from './daisy-untailwind/utilities-unstyled'
 import {
-  generateShortcutsRulesAndPreflights,
-  replaceTwPrefix,
-} from './helpers'
+  base,
+  styled,
+  styledRtl,
+  unstyled,
+  unstyledRtl,
+  utilities,
+  utilitiesStyled,
+  utilitiesUnstyled,
+} from 'daisy-untailwind'
+import { generateShortcutsRulesAndPreflights, replaceTwPrefix } from './helpers'
 import { applyPatches, patches } from './patch'
 import { varsLookup } from './utils'
 

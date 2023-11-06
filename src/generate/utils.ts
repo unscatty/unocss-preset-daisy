@@ -1,5 +1,7 @@
-import colorNames from 'daisyui/src/theming/colorNames.js'
-import themeDefaults from 'daisyui/src/theming/themeDefaults.js'
+import {
+  colorNames,
+  themeVariables as daisyDefaultThemesVars,
+} from 'daisy-untailwind'
 import { parse as parseCSSValues } from 'postcss-values-parser'
 import { RuleMeta, StaticShortcut } from 'unocss'
 import { GeneratedShortcutsMap, GeneratedShortcutsEntries } from './types'
@@ -12,7 +14,7 @@ export const colorNamesVarReplacements = Object.fromEntries(
 )
 
 export const defaultVarsLookup = Object.fromEntries(
-  Object.entries(themeDefaults.variables).map(([varName]) => [
+  Object.entries(daisyDefaultThemesVars).map(([varName]) => [
     varName,
     prefixVarName(varName, '--daisy-vars-'),
   ])
@@ -172,8 +174,3 @@ export const makeid = (length: number) => {
 
   return result
 }
-
-export const replaceSpace = (css: string) =>
-  // HSL
-  // 123 4% 5% -> 123, 4%, 5%
-  css.replace(/([\d.]+) ([\d%.]+) ([\d%.]+)/g, '$1, $2, $3')

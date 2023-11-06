@@ -1,5 +1,4 @@
-// <reference path="./data-json.d.ts" />
-import daisyThemeDefaults from 'daisyui/src/theming/themeDefaults'
+import { themeOrder as daisyDefaultThemesOrder } from 'daisy-untailwind'
 import { Shortcut, StaticRule, type Preflight, type Preset } from 'unocss'
 import { defaultDaisyThemes, getDefaultThemes } from './default-themes'
 import { mergeMaps } from './generate/helpers'
@@ -178,7 +177,7 @@ export const presetDaisy = <Theme extends object = object>(
     selectors: themeSelectors,
     prefix: '--daisy',
     layer: 'daisy-1-2-themes',
-    themeOrder: daisyThemeDefaults.themeOrder,
+    themeOrder: daisyDefaultThemesOrder,
     useColorScheme: options.useColorScheme,
     rootTheme: options.rootTheme,
   })
