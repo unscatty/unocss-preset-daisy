@@ -46,7 +46,6 @@
     "@types/node": "^20.8.9",
     "@types/postcss-js": "^4.0.3",
     "changelogen": "^0.5.5",
-    "daisy-untailwind": "^3.9.4",
     "eslint": "^8.52.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.20.0",
@@ -62,6 +61,7 @@
     "@tailwindcss/nesting": "0.0.0-insiders.565cd3e",
     "@unocss/rule-utils": "^0.57.1",
     "camelcase": "^8.0.0",
+    "daisy-untailwind": "^3.9.4",
     "parsel-js": "^1.1.2",
     "postcss": "^8.4.31",
     "postcss-js": "^4.0.1"

@@ -14,6 +14,9 @@ dependencies:
   camelcase:
     specifier: ^8.0.0
     version: 8.0.0
+  daisy-untailwind:
+    specifier: ^3.9.4
+    version: 3.9.4
   parsel-js:
     specifier: ^1.1.2
     version: 1.1.2
@@ -37,9 +40,6 @@ devDependencies:
   changelogen:
     specifier: ^0.5.5
     version: 0.5.5
-  daisy-untailwind:
-    specifier: ^3.9.4
-    version: 3.9.4
   eslint:
     specifier: ^8.52.0
     version: 8.52.0
@@ -1704,7 +1704,7 @@ packages:
 
   /colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
-    dev: true
+    dev: false
 
   /colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -1758,7 +1758,7 @@ packages:
     resolution: {integrity: sha512-SKXfLoq71d2IQ7Mb+mrre2by9vBV1k2GibHvR8LHNkRRtvDmqUVP+h1r5fjH+VgqXwAhHqHmTkCbmYdjPZs/4w==}
     dependencies:
       colord: 2.9.3
-    dev: true
+    dev: false
 
   /debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
